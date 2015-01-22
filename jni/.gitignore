@@ -1,0 +1,8 @@
+# c object files #
+##################
+*.o
+
+# generated headers and libraries #
+###################################
+libhello.so
+HelloJNI.h

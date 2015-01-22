@@ -1,0 +1,17 @@
+# Ignore eclipse project settings #
+###################################
+.settings/
+
+# Ignore generated folders #
+############################
+bin/
+gen/
+libs/
+obj/
+
+# gnu global files #
+####################
+*.orig
+*~
+\#*#
+
