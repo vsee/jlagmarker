@@ -4,5 +4,7 @@
 
 # generated headers and libraries #
 ###################################
-libhello.so
+libHelloJNI.so
 HelloJNI.h
+libLagmarkerNative.so
+LagmarkerNative.h
