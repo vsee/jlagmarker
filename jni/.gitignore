@@ -8,3 +8,5 @@ libHelloJNI.so
 HelloJNI.h
 libLagmarkerNative.so
 LagmarkerNative.h
+VideoState.h
+libVideoState.so

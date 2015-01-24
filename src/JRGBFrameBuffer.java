@@ -1,6 +1,10 @@
 public class JRGBFrameBuffer {
 	public static final int CHANNEL_NUM = 3;
 	
+	private long pNativeObject;
+	public long getNativeObject() {	return pNativeObject; }
+	
+	
 	private int width;
 	private int height;
 	private int buffSize;

@@ -15,6 +15,11 @@ JNIEXPORT jint JNICALL Java_LagmarkerNative_lnativeEcho
    return x;
 }
 
+typedef struct VideoState {
+	char name[30];
+	int currentFrame;
+} VideoState;
+
 JNIEXPORT jboolean JNICALL Java_LagmarkerNative_lnativeLoadRGBFrameBuffer
   (JNIEnv *env, jobject thisObj, jstring filename, jobject targetBuff) {
 	if(filename == NULL) {
@@ -126,6 +131,13 @@ JNIEXPORT jboolean JNICALL Java_LagmarkerNative_lnativeLoadRGBFrameBuffer
 	(*env)->SetObjectField(env, targetBuff, fidbuffer, jbuffer);
 
 	free(nativeBuffer);
+
+	VideoState *v = (VideoState*) malloc(sizeof(VideoState));
+	if(!sprintf(v->name, "myvideo")) fprintf(stderr, "Error writing to char buffer!\n");
+	v->currentFrame = 100;
+	jfieldID fidNativeObj = (*env)->GetFieldID(env, rgbBuffClass, "pNativeObject", "J");
+	(*env)->SetLongField(env, targetBuff, fidNativeObj, (long)v);
+
 	return true;
 }
 
@@ -161,6 +173,12 @@ JNIEXPORT jboolean JNICALL Java_LagmarkerNative_lnativeSaveRGBFrameBuffer
 	(*env)->ReleaseByteArrayElements(env, jbytebuffer, data, 0);
 
 	fclose(pFile);
+
+
+	jfieldID fidNativeObj = (*env)->GetFieldID(env, rgbBuffClass, "pNativeObject", "J");
+	VideoState* v = (VideoState*)(*env)->GetLongField(env, srcBuffer, fidNativeObj);
+	fprintf(stdout, "%s %d\n", v->name, v->currentFrame);
+
 	return true;
 }
 

@@ -1,14 +1,15 @@
 CC = gcc
 
-CCFLAGS = -Wall -Werror -fpic
+CCFLAGS = -Wall -Werror -fPIC
 
-#INCLUDES = -I"/usr/local/java/jdk1.8.0_25/include" -I"/usr/local/java/jdk1.8.0_25/include/linux"
-INCLUDES = -I"/usr/lib/jvm/java-8-oracle/include/" -I"/usr/lib/jvm/java-8-oracle/include/linux"
+#INCLUDES = -I"/usr/local/java/jdk1.8.0_25/include" -I"/usr/local/java/jdk1.8.0_25/include/linux" -I"../libs/libav-0.8.10/include"
+INCLUDES = -I"/usr/lib/jvm/java-8-oracle/include/" -I"/usr/lib/jvm/java-8-oracle/include/linux" -I"../libs/libav-0.8.10/include"
+LDFLAGS = -L../libs/libav-0.8.10/lib -lavutil -lavformat -lavcodec -lswscale -lavutil
 
 # Define a variable for classpath
 CLASS_PATH = ../bin
 
-NATIVELIBNAMES = LagmarkerNative HelloJNI
+NATIVELIBNAMES = LagmarkerNative HelloJNI VideoState
 NLIBS = $(addprefix lib, $(addsuffix .so, $(NATIVELIBNAMES)))
 NLIBSRC = $(addsuffix .c, $(NATIVELIBNAMES))
 NLIBOBJ = $(addsuffix .o, $(NATIVELIBNAMES))
@@ -21,13 +22,11 @@ vpath %.class $(CLASS_PATH)
 
 all : buildLibs
 
-# $@ matches the target, $< matches the first dependancy
 buildLibs : buildObj
 	for lib in $(NATIVELIBNAMES) ; do \
-		$(CC) -shared -o $(addprefix lib, $(addsuffix .so, $$lib)) $(addsuffix .o, $$lib) ; \
+		$(CC) -shared -o $(addprefix lib, $(addsuffix .so, $$lib)) $(addsuffix .o, $$lib) -Wl,--whole-archive $(LDFLAGS) -Wl,--no-whole-archive ; \
 	done
 	
-# $@ matches the target, $< matches the first dependancy
 buildObj : $(NLIBSRC) genNativeHeaders
 	for lib in $(NATIVELIBNAMES) ; do \
 		$(CC) $(INCLUDES) $(CCFLAGS) -c $(addsuffix .c, $$lib) -o $(addsuffix .o, $$lib) ; \
