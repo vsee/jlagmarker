@@ -129,15 +129,48 @@ JNIEXPORT void JNICALL Java_VideoState_lnativeFreeVideoState(JNIEnv *env, jobjec
 	nVideoState->videoStreamIdx = -1;
 
 	// Close the codec
-	avcodec_close(nVideoState->pCodecCtx);
+	if(nVideoState->pCodecCtx)
+		avcodec_close(nVideoState->pCodecCtx);
 
 	// Close the video file
-	avformat_free_context(nVideoState->pFormatCtx);
+	if(nVideoState->pFormatCtx)
+		avformat_free_context(nVideoState->pFormatCtx);
 
 	// Free the YUV frame
-	av_free(nVideoState->currFrameYUV);
+	if(nVideoState->currFrameYUV)
+		av_free(nVideoState->currFrameYUV);
 
 	nVideoState->pCodec = NULL;
+}
+
+JNIEXPORT jboolean JNICALL Java_VideoState_lnativeDecodeNextVideoFrame(JNIEnv *env, jobject videoState) {
+	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
+	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
+	jmethodID midUpdateFrameCounter = (*env)->GetMethodID(env, videoStateClass, "updateFrameCounter", "()V");
+	if (!fidNativeVideoState || !midUpdateFrameCounter) {
+		fprintf(stderr, "Given video state has unexpected format!\n");
+		return false;
+	}
+	NativeVideoState* nVideoState = (NativeVideoState*)(*env)->GetLongField(env, videoState, fidNativeVideoState);
+
+	int frameFinished = 0;
+
+	while(av_read_frame(nVideoState->pFormatCtx, &nVideoState->currPacket) >= 0) {
+
+		// Is this a packet from the video stream?
+		if (nVideoState->currPacket.stream_index == nVideoState->videoStreamIdx) {
+			// Decode video frame
+			avcodec_decode_video2(nVideoState->pCodecCtx, nVideoState->currFrameYUV, &frameFinished, &nVideoState->currPacket);
+
+			// Did we get a video frame?
+			if (frameFinished) {
+			   (*env)->CallVoidMethod(env, videoState, midUpdateFrameCounter);
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 #ifdef __cplusplus

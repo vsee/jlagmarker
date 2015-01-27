@@ -17,9 +17,10 @@ public class VideoState {
 		
 		videoFileName = fileName;
 		
-		if(!lnativeAllocVideoState())
+		if(!lnativeAllocVideoState()) {
 			lnativeFreeVideoState();
 			throw new RuntimeException("Allocation of native video state failed.");
+		}
 	}
 	
 	@Override
@@ -28,8 +29,24 @@ public class VideoState {
 		super.finalize();
 	}
 	
+	private void updateFrameCounter() {
+		currFrameId++;
+		currTimeNS += timePerFrameNS;		
+	}
+	
+	public boolean decodeNextVideoFrame() {
+		return lnativeDecodeNextVideoFrame();
+	}
+	
+	@Override
+	public String toString() {
+		return currFrameId + " " + currTimeNS;
+	}
+	
+	
 	private native boolean lnativeAllocVideoState();
 	private native void lnativeFreeVideoState();
+	private native boolean lnativeDecodeNextVideoFrame();
 	
 	static {
 		System.loadLibrary("VideoState");
