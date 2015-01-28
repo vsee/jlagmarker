@@ -2,8 +2,10 @@ CC = gcc
 
 CCFLAGS = -Wall -Werror -fPIC
 
-INCLUDES = -I"/usr/lib/jvm/java-8-oracle/include/" -I"/usr/lib/jvm/java-8-oracle/include/linux" -I"../lib/libav-11.2/include"
-LDFLAGS = -L../lib/libav-11.2/lib/ -lavutil -lavformat -lavcodec -lswscale
+INCLUDES = -I"/usr/lib/jvm/java-8-oracle/include/" -I"/usr/lib/jvm/java-8-oracle/include/linux" -I"../lib/libav-0.8.16/include"
+LDFLAGS = -L../lib/libav-0.8.16/lib/ -lavcodec -lavutil -lavformat -lavcodec -lavutil 
+# -lavdevice -lavfilter -lswscale
+ 
 
 # Define a variable for classpath
 CLASS_PATH = ../bin
@@ -23,7 +25,7 @@ all : buildLibs
 
 buildLibs : buildObj
 	for lib in $(NATIVELIBNAMES) ; do \
-		$(CC) -shared -o $(addprefix lib, $(addsuffix .so, $$lib)) $(addsuffix .o, $$lib) -Wl,--whole-archive $(LDFLAGS) -Wl,--no-whole-archive; \
+		$(CC) -shared -Wl,-Bsymbolic -o $(addprefix lib, $(addsuffix .so, $$lib)) $(addsuffix .o, $$lib) $(LDFLAGS) ; \
 	done
 	
 buildObj : $(NLIBSRC) genNativeHeaders
