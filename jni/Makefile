@@ -10,7 +10,7 @@ LDFLAGS = -L../lib/libav-0.8.16/lib/ -lavcodec -lavutil -lavformat -lavcodec -la
 # Define a variable for classpath
 CLASS_PATH = ../bin
 
-NATIVELIBNAMES = LagmarkerNative HelloJNI VideoState
+NATIVELIBNAMES = VideoState
 NLIBS = $(addprefix lib, $(addsuffix .so, $(NATIVELIBNAMES)))
 NLIBSRC = $(addsuffix .c, $(NATIVELIBNAMES))
 NLIBOBJ = $(addsuffix .o, $(NATIVELIBNAMES))

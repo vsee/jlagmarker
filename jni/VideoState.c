@@ -265,9 +265,6 @@ JNIEXPORT jboolean JNICALL Java_VideoState_lnativeExtractCurrFrame(JNIEnv *env, 
 			(AVPicture*) nVideoState->currFrameYUV, nVideoState->pCodecCtx->pix_fmt,
 			nVideoState->pCodecCtx->width, nVideoState->pCodecCtx->height);
 	av_free_packet(&nVideoState->currPacket);
-	int buffSize = nVideoState->pCodecCtx->height * pFrameRGB->linesize[0];
-	if(buffSize != (3 * nVideoState->pCodecCtx->width *	nVideoState->pCodecCtx->height))
-		fprintf(stderr, "Size does not match!\n");
 
 	if (!setJRGBbuffer(env, currFrame, nVideoState->pCodecCtx->width,
 			nVideoState->pCodecCtx->height, (jbyte*) pFrameRGB->data[0])) {
