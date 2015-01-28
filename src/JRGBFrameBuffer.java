@@ -1,9 +1,8 @@
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class JRGBFrameBuffer {
 	public static final int CHANNEL_NUM = 3;
-	
-	private long pNativeObject;
-	public long getNativeObject() {	return pNativeObject; }
-	
 	
 	private int width;
 	private int height;
@@ -27,5 +26,12 @@ public class JRGBFrameBuffer {
 		int idx = pixel * CHANNEL_NUM + channel;
 		
 		return buffer[idx] & 0xFF;
+	}
+	
+	public void writeToFile(String filename) throws IOException {
+		FileOutputStream out = new FileOutputStream(filename);
+		out.write(("P6\n" + getWidth() + " " + getHeight() + "\n255\n").getBytes()); // write header
+		out.write(buffer);
+		out.close();
 	}
 }

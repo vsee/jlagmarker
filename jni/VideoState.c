@@ -173,6 +173,114 @@ JNIEXPORT jboolean JNICALL Java_VideoState_lnativeDecodeNextVideoFrame(JNIEnv *e
 	return false;
 }
 
+static bool setJRGBbuffer(JNIEnv *env, jobject buff, jint width, jint height, jbyte* nativeBuff) {
+	if(buff == NULL) {
+		fprintf(stderr, "Given target buffer must not be null!\n");
+		return false;
+	}
+
+	if(nativeBuff == NULL) {
+		fprintf(stderr, "Given native source buffer must not be null!\n");
+		return false;
+	}
+
+	jclass rgbBuffClass = (*env)->GetObjectClass(env, buff);
+	jfieldID fidWidth = (*env)->GetFieldID(env, rgbBuffClass, "width", "I");
+	jfieldID fidHeight = (*env)->GetFieldID(env, rgbBuffClass, "height", "I");
+	jfieldID fidBuffSize = (*env)->GetFieldID(env, rgbBuffClass, "buffSize", "I");
+	jfieldID fidbuffer = (*env)->GetFieldID(env, rgbBuffClass, "buffer", "[B");
+	if (!fidWidth || !fidHeight || !fidBuffSize || !fidbuffer) {
+		fprintf(stderr, "Given target buffer has unexpected format!\n");
+		return false;
+	}
+
+	jsize buffSize = width * height * 3; // assume 3 colour channels per pixel
+	(*env)->SetIntField(env, buff, fidWidth, width);
+	(*env)->SetIntField(env, buff, fidHeight, height);
+	(*env)->SetIntField(env, buff, fidBuffSize, buffSize);
+
+	// put native buffer into java object
+	jbyteArray jbuffer = (*env)->NewByteArray(env, buffSize);
+	(*env)->SetByteArrayRegion(env, jbuffer, 0, buffSize, nativeBuff);
+	(*env)->SetObjectField(env, buff, fidbuffer, jbuffer);
+
+	return true;
+}
+
+static AVFrame* allocate_RGB_frame(uint8_t ** buffer, AVCodecContext *pCodecCtx) {
+	int numBytes;
+	AVFrame* pFrameRGB = avcodec_alloc_frame();
+	if (pFrameRGB == NULL )	return NULL;
+
+	// Determine required buffer size and allocate buffer
+	numBytes = avpicture_get_size(PIX_FMT_RGB24, pCodecCtx->width,
+			pCodecCtx->height);
+	*buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
+
+	// Assign appropriate parts of buffer to image planes in pFrameRGB
+	// Note that pFrameRGB is an AVFrame, but AVFrame is a superset
+	// of AVPicture
+	avpicture_fill((AVPicture *) pFrameRGB, *buffer, PIX_FMT_RGB24,
+			pCodecCtx->width, pCodecCtx->height);
+
+	return pFrameRGB;
+}
+
+static int img_convert(AVPicture* dst, enum PixelFormat dst_pix_fmt,
+		AVPicture* src, enum PixelFormat pix_fmt, int width, int height) {
+	int av_log = av_log_get_level();
+	av_log_set_level(AV_LOG_QUIET);
+
+	struct SwsContext *img_convert_ctx = sws_getContext(width, height, pix_fmt,
+			width, height, dst_pix_fmt, SWS_BICUBIC, NULL, NULL, NULL );
+
+	int result = sws_scale(img_convert_ctx, (const uint8_t* const*) src->data, src->linesize, 0, height, dst->data, dst->linesize);
+
+	sws_freeContext(img_convert_ctx);
+
+	av_log_set_level(av_log);
+
+	return result;
+}
+
+JNIEXPORT jboolean JNICALL Java_VideoState_lnativeExtractCurrFrame(JNIEnv *env, jobject videoState, jobject currFrame) {
+	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
+	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
+	if (!fidNativeVideoState) {
+		fprintf(stderr, "Given video state has unexpected format!\n");
+		return false;
+	}
+	NativeVideoState* nVideoState = (NativeVideoState*)(*env)->GetLongField(env, videoState, fidNativeVideoState);
+
+	// Allocate RGB video frames
+	uint8_t *buffer;
+	AVFrame *pFrameRGB = allocate_RGB_frame(&buffer, nVideoState->pCodecCtx);
+	if (pFrameRGB == NULL) {
+		fprintf(stderr, "RGBFrame allocation failed!\n");
+		return false;
+	}
+
+	// Convert the begin frame image from its native format to RGB
+	img_convert((AVPicture *) pFrameRGB, PIX_FMT_RGB24,
+			(AVPicture*) nVideoState->currFrameYUV, nVideoState->pCodecCtx->pix_fmt,
+			nVideoState->pCodecCtx->width, nVideoState->pCodecCtx->height);
+	av_free_packet(&nVideoState->currPacket);
+	int buffSize = nVideoState->pCodecCtx->height * pFrameRGB->linesize[0];
+	if(buffSize != (3 * nVideoState->pCodecCtx->width *	nVideoState->pCodecCtx->height))
+		fprintf(stderr, "Size does not match!\n");
+
+	if (!setJRGBbuffer(env, currFrame, nVideoState->pCodecCtx->width,
+			nVideoState->pCodecCtx->height, (jbyte*) pFrameRGB->data[0])) {
+		fprintf(stderr, "RGBFrameBuffer allocation failed!\n");
+		return false;
+	}
+
+	av_free(buffer);
+	av_free(pFrameRGB);
+
+	return true;
+}
+
 #ifdef __cplusplus
 }
 #endif

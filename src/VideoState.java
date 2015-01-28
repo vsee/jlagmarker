@@ -34,19 +34,27 @@ public class VideoState {
 		currTimeNS += timePerFrameNS;		
 	}
 	
-	public boolean decodeNextVideoFrame() {
-		return lnativeDecodeNextVideoFrame();
+	public JRGBFrameBuffer decodeNextVideoFrame() {
+		if(!lnativeDecodeNextVideoFrame())
+			throw new RuntimeException("Decoding of next video frame failed.");
+		
+		JRGBFrameBuffer buff = new JRGBFrameBuffer();
+		
+		if(!lnativeExtractCurrFrame(buff))
+			throw new RuntimeException("Converting current video frame to RGB buffer failed.");
+		
+		return buff;
 	}
 	
 	@Override
 	public String toString() {
 		return currFrameId + " " + currTimeNS;
 	}
-	
-	
+		
 	private native boolean lnativeAllocVideoState();
 	private native void lnativeFreeVideoState();
 	private native boolean lnativeDecodeNextVideoFrame();
+	private native boolean lnativeExtractCurrFrame(JRGBFrameBuffer currFrame);
 	
 	static {
 		System.loadLibrary("VideoState");
