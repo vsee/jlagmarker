@@ -25,9 +25,9 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1515106128" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
 								<option id="gnu.c.compiler.option.include.paths.1890923433" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/jlagmarker/libs/libav-0.8.10/include}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/lib/jvm/java-8-oracle/include"/>
 									<listOptionValue builtIn="false" value="/usr/lib/jvm/java-8-oracle/include/linux"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/jlagmarker/lib/libav-0.8.10/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.968480999" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -92,4 +92,5 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>

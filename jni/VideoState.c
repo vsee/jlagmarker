@@ -107,7 +107,7 @@ JNIEXPORT jboolean JNICALL Java_VideoState_lnativeAllocVideoState(JNIEnv *env, j
 	(*env)->SetLongField(env, videoState, fidTimePerFrameNS, timePerFrameS * 1000000000);
 
 	// Allocate video frames
-	nVideoState->currFrameYUV = avcodec_alloc_frame();
+	nVideoState->currFrameYUV = av_frame_alloc();
 	if (nVideoState->currFrameYUV == NULL ) {
 		fprintf(stderr, "YUVFrame allocation failed!\n");
 		return false;
