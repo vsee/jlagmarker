@@ -3,7 +3,7 @@ CC = gcc
 CCFLAGS = -Wall -Werror -fPIC
 
 INCLUDES = -I"/usr/lib/jvm/java-8-oracle/include/" -I"/usr/lib/jvm/java-8-oracle/include/linux" -I"../lib/libav-0.8.16/include"
-LDFLAGS = -L../lib/libav-0.8.16/lib/ -lavcodec -lavutil -lavformat -lavcodec -lavutil -lswscale
+LDFLAGS = -L../lib/libav-0.8.16/lib/ -lavformat -lavcodec -lavutil -lswscale
 # -lavdevice -lavfilter 
  
 
