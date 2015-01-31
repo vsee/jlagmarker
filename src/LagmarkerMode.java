@@ -1,5 +1,5 @@
-public abstract class LagmarkerMode {
+public interface LagmarkerMode {
 
-	public abstract void run();
+	public void run();
 
 }

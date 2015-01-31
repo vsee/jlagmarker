@@ -46,8 +46,13 @@ public class VideoState {
 		return buff;
 	}
 	
+	public void dumpVideoFormat() {
+		lnativeDumpVideoFormat();
+	}
+	
 	@Override
 	public String toString() {
+		// TODO make this more pretty
 		return currFrameId + " " + currTimeNS;
 	}
 		
@@ -55,6 +60,7 @@ public class VideoState {
 	private native void lnativeFreeVideoState();
 	private native boolean lnativeDecodeNextVideoFrame();
 	private native boolean lnativeExtractCurrFrame(JRGBFrameBuffer currFrame);
+	private native void lnativeDumpVideoFormat();
 	
 	static {
 		System.loadLibrary("VideoState");

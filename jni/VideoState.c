@@ -278,6 +278,22 @@ JNIEXPORT jboolean JNICALL Java_VideoState_lnativeExtractCurrFrame(JNIEnv *env, 
 	return true;
 }
 
+JNIEXPORT void JNICALL Java_VideoState_lnativeDumpVideoFormat(JNIEnv *env, jobject videoState) {
+	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
+	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
+	jfieldID fidVideoFileName = (*env)->GetFieldID(env, videoStateClass, "videoFileName", "Ljava/lang/String;");
+	if (!fidNativeVideoState || !fidVideoFileName) {
+		fprintf(stderr, "Given video state has unexpected format!\n");
+		return;
+	}
+	NativeVideoState* nVideoState = (NativeVideoState*)(*env)->GetLongField(env, videoState, fidNativeVideoState);
+
+	jstring videoFileName = (*env)->GetObjectField(env, videoState, fidVideoFileName);
+	const char *cVideoFileName = (*env)->GetStringUTFChars(env, videoFileName, NULL);
+
+	av_dump_format(nVideoState->pFormatCtx, 0, cVideoFileName, 0);
+}
+
 #ifdef __cplusplus
 }
 #endif
