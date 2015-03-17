@@ -55,6 +55,14 @@ public class VideoState {
 		// TODO make this more pretty
 		return currFrameId + " " + currTimeNS;
 	}
+	
+	public int getCurrentFrame() {
+		return currFrameId;
+	}
+	
+	public long getCurrentTimeNS() {
+		return currTimeNS;
+	}
 		
 	private native boolean lnativeAllocVideoState();
 	private native void lnativeFreeVideoState();

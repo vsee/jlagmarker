@@ -1,0 +1,1 @@
+use as VM argument in order to find necessary libarries: -Djava.library.path=jni
