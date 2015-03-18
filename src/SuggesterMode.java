@@ -1,4 +1,9 @@
 
+import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
+import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
+import mobileworkloads.jlagmarker.video.VideoFrame;
+
+
 public class SuggesterMode implements LagmarkerMode {
 
 	protected VideoState vstate;
@@ -13,7 +18,7 @@ public class SuggesterMode implements LagmarkerMode {
 		vstate.dumpVideoFormat();
 		System.out.println("\n\n");
 		
-
+		processVideoStream();
 		
 		// TODO
 		// parse input events
@@ -34,18 +39,26 @@ public class SuggesterMode implements LagmarkerMode {
 	protected boolean findStartFrame() {
 		// TODO adapt by white flash offset from first input
 		while(true) {
-			JRGBFrameBuffer frame = vstate.decodeNextVideoFrame();
+			VideoFrame frame = vstate.decodeNextVideoFrame();
 			if(frame == null) return false;
 			
-			if(isStartFrame(frame)) {
-				System.out.println("Start frame [" + vstate.getCurrentFrame() + "] found at: " + vstate.getCurrentTimeNS() + " ns.");
+			if(isStartFrame(vstate.getCurrentFrame())) {
+				System.out.println("Start frame [" + frame.videoFrameId + "] found.");
 				return true;
 			}
 		}
 	}
 	
-	protected boolean isStartFrame(JRGBFrameBuffer frame) {
-		return false;
+	protected boolean isStartFrame(VideoFrame frame) {
+		// mask out control panel
+		frame.applyMask("STATUS_BAR_MASK_PORTRAIT");
+
+		// look for completely white frame
+		for (int i = 0; i < frame.dataBuffer.getWidth() * frame.dataBuffer.getHeight() * JRGBFrameBuffer.CHANNEL_NUM; i++) {
+			if(frame.dataBuffer.getRawChannel(i) != 0xFF) return false;
+		}
+
+		return true;
 	}
 
 	protected void findLags() {

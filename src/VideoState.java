@@ -1,3 +1,6 @@
+import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
+import mobileworkloads.jlagmarker.video.VideoFrame;
+
 public class VideoState {
 
 	private String videoFileName;
@@ -13,9 +16,12 @@ public class VideoState {
 	
 	private long pNativeVideoState;
 	
+	private VideoFrame currFrame;
+	
 	public VideoState(String fileName) {
 		
 		videoFileName = fileName;
+		currFrame = null;
 		
 		if(!lnativeAllocVideoState()) {
 			lnativeFreeVideoState();
@@ -34,7 +40,7 @@ public class VideoState {
 		currTimeNS += timePerFrameNS;		
 	}
 	
-	public JRGBFrameBuffer decodeNextVideoFrame() {
+	public VideoFrame decodeNextVideoFrame() {
 		if(!lnativeDecodeNextVideoFrame())
 			throw new RuntimeException("Decoding of next video frame failed.");
 		
@@ -43,7 +49,8 @@ public class VideoState {
 		if(!lnativeExtractCurrFrame(buff))
 			throw new RuntimeException("Converting current video frame to RGB buffer failed.");
 		
-		return buff;
+		currFrame = new VideoFrame(videoFileName, currFrameId, buff); 
+		return currFrame.clone();
 	}
 	
 	public void dumpVideoFormat() {
@@ -56,12 +63,16 @@ public class VideoState {
 		return currFrameId + " " + currTimeNS;
 	}
 	
-	public int getCurrentFrame() {
+	public int getCurrentFrameId() {
 		return currFrameId;
 	}
 	
 	public long getCurrentTimeNS() {
 		return currTimeNS;
+	}
+	
+	public VideoFrame getCurrentFrame() {
+		return currFrame;
 	}
 		
 	private native boolean lnativeAllocVideoState();

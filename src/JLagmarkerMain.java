@@ -1,8 +1,17 @@
+
+
+import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
+import mobileworkloads.jlagmarker.markermodes.LagmarkerModeType;
+
 public class JLagmarkerMain {
-	
+		
 	private LagmarkerMode mode; 
 	
 	public JLagmarkerMain(String[] args) {
+	
+		// TODO implement mask parsing
+		// TODO refactor frame write to file
+		// TODO refactor package stuff in JNI
 		
 		// args: jlagmarker.jar <mode> -modearg1 blabla -modearg2 blabla
 		if(args.length < 2) // expected <mode> <videoname>
