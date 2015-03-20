@@ -4,9 +4,5 @@
 
 # generated headers and libraries #
 ###################################
-libHelloJNI.so
-HelloJNI.h
-libLagmarkerNative.so
-LagmarkerNative.h
-VideoState.h
+mobileworkloads_jlagmarker_video_VideoState.h
 libVideoState.so

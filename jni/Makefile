@@ -10,31 +10,19 @@ LDFLAGS = -L../lib/libav-0.8.16/lib/ -lavformat -lavcodec -lavutil -lswscale
 # Define a variable for classpath
 CLASS_PATH = ../bin
 
-NATIVELIBNAMES = VideoState
-NLIBS = $(addprefix lib, $(addsuffix .so, $(NATIVELIBNAMES)))
-NLIBSRC = $(addsuffix .c, $(NATIVELIBNAMES))
-NLIBOBJ = $(addsuffix .o, $(NATIVELIBNAMES))
-NLIBHEADER = $(addsuffix .h, $(NATIVELIBNAMES))
-NLIBCLASS = $(addsuffix .class, $(NATIVELIBNAMES))
-
-
 # Define a virtual path for .class in the bin directory
 vpath %.class $(CLASS_PATH)
 
 all : buildLibs
 
 buildLibs : buildObj
-	for lib in $(NATIVELIBNAMES) ; do \
-		$(CC) -shared -Wl,-Bsymbolic -o $(addprefix lib, $(addsuffix .so, $$lib)) $(addsuffix .o, $$lib) $(LDFLAGS) ; \
-	done
+	$(CC) -shared -Wl,-Bsymbolic -o libVideoState.so VideoState.o $(LDFLAGS)
 	
-buildObj : $(NLIBSRC) genNativeHeaders
-	for lib in $(NATIVELIBNAMES) ; do \
-		$(CC) $(INCLUDES) $(CCFLAGS) -c $(addsuffix .c, $$lib) -o $(addsuffix .o, $$lib) ; \
-	done
+buildObj : VideoState.c genNativeHeaders
+	$(CC) $(INCLUDES) $(CCFLAGS) -c VideoState.c -o VideoState.o
 	
-genNativeHeaders : $(NLIBCLASS)
-	javah -classpath $(CLASS_PATH) $(NATIVELIBNAMES)
+genNativeHeaders : mobileworkloads/jlagmarker/video/VideoState.class
+	javah -classpath $(CLASS_PATH) mobileworkloads.jlagmarker.video.VideoState
 	
 clean :
-	rm $(NLIBS) $(NLIBOBJ) $(NLIBHEADER)
+	rm libVideoState.so VideoState.o mobileworkloads_jlagmarker_video_VideoState.h

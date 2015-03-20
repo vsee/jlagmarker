@@ -9,7 +9,7 @@
 
 #include <libswscale/swscale.h>
 
-#include "VideoState.h"
+#include "mobileworkloads_jlagmarker_video_VideoState.h"
 #include "NativeVideoState.h"
 
 #ifdef __cplusplus
@@ -54,7 +54,7 @@ static AVCodec* find_codec(AVCodecContext *pCodecCtx) {
 	return pCodec;
 }
 
-JNIEXPORT jboolean JNICALL Java_VideoState_lnativeAllocVideoState(JNIEnv *env, jobject videoState) {
+JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeAllocVideoState(JNIEnv *env, jobject videoState) {
 	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
 	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
 	jfieldID fidVideoFileName = (*env)->GetFieldID(env, videoStateClass, "videoFileName", "Ljava/lang/String;");
@@ -116,7 +116,7 @@ JNIEXPORT jboolean JNICALL Java_VideoState_lnativeAllocVideoState(JNIEnv *env, j
 	return true;
 }
 
-JNIEXPORT void JNICALL Java_VideoState_lnativeFreeVideoState(JNIEnv *env, jobject videoState) {
+JNIEXPORT void JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeFreeVideoState(JNIEnv *env, jobject videoState) {
 	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
 	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
 	if (!fidNativeVideoState) {
@@ -143,7 +143,7 @@ JNIEXPORT void JNICALL Java_VideoState_lnativeFreeVideoState(JNIEnv *env, jobjec
 	nVideoState->pCodec = NULL;
 }
 
-JNIEXPORT jboolean JNICALL Java_VideoState_lnativeDecodeNextVideoFrame(JNIEnv *env, jobject videoState) {
+JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeDecodeNextVideoFrame(JNIEnv *env, jobject videoState) {
 	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
 	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
 	jmethodID midUpdateFrameCounter = (*env)->GetMethodID(env, videoStateClass, "updateFrameCounter", "()V");
@@ -243,7 +243,7 @@ static int img_convert(AVPicture* dst, enum PixelFormat dst_pix_fmt,
 	return result;
 }
 
-JNIEXPORT jboolean JNICALL Java_VideoState_lnativeExtractCurrFrame(JNIEnv *env, jobject videoState, jobject currFrame) {
+JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeExtractCurrFrame(JNIEnv *env, jobject videoState, jobject currFrame) {
 	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
 	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
 	if (!fidNativeVideoState) {
@@ -278,7 +278,7 @@ JNIEXPORT jboolean JNICALL Java_VideoState_lnativeExtractCurrFrame(JNIEnv *env, 
 	return true;
 }
 
-JNIEXPORT void JNICALL Java_VideoState_lnativeDumpVideoFormat(JNIEnv *env, jobject videoState) {
+JNIEXPORT void JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeDumpVideoFormat(JNIEnv *env, jobject videoState) {
 	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
 	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
 	jfieldID fidVideoFileName = (*env)->GetFieldID(env, videoStateClass, "videoFileName", "Ljava/lang/String;");

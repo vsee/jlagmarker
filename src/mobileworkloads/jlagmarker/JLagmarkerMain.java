@@ -1,7 +1,8 @@
-
+package mobileworkloads.jlagmarker;
 
 import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
 import mobileworkloads.jlagmarker.markermodes.LagmarkerModeType;
+import mobileworkloads.jlagmarker.markermodes.SuggesterMode;
 
 public class JLagmarkerMain {
 		

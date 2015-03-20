@@ -1,3 +1,4 @@
+package mobileworkloads.jlagmarker.video;
 import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 

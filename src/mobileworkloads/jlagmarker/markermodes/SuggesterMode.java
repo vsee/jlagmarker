@@ -1,7 +1,8 @@
+package mobileworkloads.jlagmarker.markermodes;
 
-import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
 import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
 import mobileworkloads.jlagmarker.video.VideoFrame;
+import mobileworkloads.jlagmarker.video.VideoState;
 
 
 public class SuggesterMode implements LagmarkerMode {
