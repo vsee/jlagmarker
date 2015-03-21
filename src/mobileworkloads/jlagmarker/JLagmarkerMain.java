@@ -11,16 +11,15 @@ public class JLagmarkerMain {
 	public JLagmarkerMain(String[] args) {
 	
 		// TODO implement mask parsing
-		// TODO refactor frame write to file
-		// TODO refactor package stuff in JNI
-		
+
 		// args: jlagmarker.jar <mode> -modearg1 blabla -modearg2 blabla
-		if(args.length < 2) // expected <mode> <videoname>
+		if(args.length < 3) // expected <mode> <videoname> <maskspec>
 			// TODO implement some usage messages
-			throw new IllegalArgumentException("Arguments not specified if needed.");
+			throw new IllegalArgumentException("Arguments not specified as needed.");
 		
 		String modeType = args[0];
 		String videoName = args[1];
+		String maskSpec = args[2];
 		
 		if(modeType.equalsIgnoreCase(LagmarkerModeType.SUGGESTER.name())) {
 			mode = new SuggesterMode(videoName);
