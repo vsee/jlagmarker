@@ -52,7 +52,8 @@ public class SuggesterMode implements LagmarkerMode {
 	
 	protected boolean isStartFrame(VideoFrame frame) {
 		// mask out control panel
-		frame.applyMask("STATUS_BAR_MASK_PORTRAIT");
+		if(!frame.applyMask("STATUS_BAR_MASK_PORTRAIT")) 
+			throw new RuntimeException("Failed to apply mask to frame: STATUS_BAR_MASK_PORTRAIT");
 
 		// look for completely white frame
 		for (int i = 0; i < frame.dataBuffer.getWidth() * frame.dataBuffer.getHeight() * JRGBFrameBuffer.CHANNEL_NUM; i++) {

@@ -1,8 +1,12 @@
 package mobileworkloads.jlagmarker;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+
 import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
 import mobileworkloads.jlagmarker.markermodes.LagmarkerModeType;
 import mobileworkloads.jlagmarker.markermodes.SuggesterMode;
+import mobileworkloads.jlagmarker.masking.MaskManager;
 
 public class JLagmarkerMain {
 		
@@ -20,6 +24,14 @@ public class JLagmarkerMain {
 		String modeType = args[0];
 		String videoName = args[1];
 		String maskSpec = args[2];
+
+		try {
+			MaskManager.getInstance().parseMasks(Paths.get(maskSpec));
+		} catch (IOException e) {
+			System.out.println("Error parsing mask specification file [" + maskSpec + "]: " + e.getMessage());
+			e.printStackTrace();
+			throw new RuntimeException("Error initialising lagmarker main.");
+		}
 		
 		if(modeType.equalsIgnoreCase(LagmarkerModeType.SUGGESTER.name())) {
 			mode = new SuggesterMode(videoName);
