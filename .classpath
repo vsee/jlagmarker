@@ -6,5 +6,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="jlagmarker/libs/libav-0.8.10/lib"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="/algovsim"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

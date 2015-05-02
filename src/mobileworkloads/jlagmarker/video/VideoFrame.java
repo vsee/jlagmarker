@@ -7,20 +7,26 @@ import mobileworkloads.jlagmarker.masking.MaskManager;
 
 public class VideoFrame implements Cloneable {
 
-	public final String srcVideoName;
+	public final long startTimeUS;
+	public final long endTimeUS;
+	public final long durationUS;
+	
 	public final int videoFrameId;
 	public final JRGBFrameBuffer dataBuffer;
 	
 	protected final List<String> appliedMasks;
 	
-	public VideoFrame(String videoName, int frameId, JRGBFrameBuffer data) {
-		srcVideoName = videoName;
+	public VideoFrame(long currentTimeUS, long timePerFrameUS, int frameId, JRGBFrameBuffer data) {
+		startTimeUS = currentTimeUS;
+		endTimeUS = currentTimeUS + timePerFrameUS;
+		durationUS = timePerFrameUS;
+		
 		videoFrameId = frameId;
 		dataBuffer = data;
 		
 		appliedMasks = new ArrayList<String>();
 	}
-	
+
 	public boolean applyMask(String maskName) {
 		if(MaskManager.getInstance().maskFrame(this, maskName)) {
 			appliedMasks.add(maskName);
@@ -31,6 +37,14 @@ public class VideoFrame implements Cloneable {
 	}
 	
 	public VideoFrame clone() {
-		return new VideoFrame(srcVideoName, videoFrameId, dataBuffer.clone());
+		return new VideoFrame(startTimeUS, durationUS, videoFrameId, dataBuffer.clone());
+	}
+	
+	@Override
+	public String toString() {
+		return new StringBuilder()
+		.append("Frame: ").append(videoFrameId)
+		.append(" - Start: ").append(startTimeUS)
+		.append(" - End: ").append(endTimeUS).toString();
 	}
 }

@@ -50,7 +50,7 @@ public class VideoState {
 		if(!lnativeExtractCurrFrame(buff))
 			throw new RuntimeException("Converting current video frame to RGB buffer failed.");
 		
-		currFrame = new VideoFrame(videoFileName, currFrameId, buff); 
+		currFrame = new VideoFrame(getCurrentTimeUS(), timePerFrameNS / 1000, currFrameId, buff); 
 		return currFrame.clone();
 	}
 	
@@ -68,12 +68,12 @@ public class VideoState {
 		return currFrameId;
 	}
 	
-	public long getCurrentTimeNS() {
-		return currTimeNS;
+	public long getCurrentTimeUS() {
+		return currTimeNS / 1000;
 	}
 	
-	public VideoFrame getCurrentFrame() {
-		return currFrame;
+	public VideoFrame extractCurrentFrame() {
+		return currFrame != null ? currFrame.clone() : null;
 	}
 		
 	private native boolean lnativeAllocVideoState();
