@@ -11,6 +11,9 @@ import java.util.Calendar;
 import mobileworkloads.jlagmarker.InputEventStream;
 import mobileworkloads.jlagmarker.lags.Lag;
 import mobileworkloads.jlagmarker.lags.LagProfile;
+import mobileworkloads.jlagmarker.suggesting.SISuggester;
+import mobileworkloads.jlagmarker.suggesting.Suggester;
+import mobileworkloads.jlagmarker.suggesting.SuggesterConfParams;
 import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.video.VideoState;
@@ -27,6 +30,8 @@ public class SuggesterMode implements LagmarkerMode {
 	
 	protected VideoFrame wlStartFrame;
 	
+	protected final Suggester suggester;
+	
 	public SuggesterMode(String videoName, InputEventStream ieStream,
 			LagProfile lprofile, String outputPrefix, Path outputFolder) {
 		vstate = new VideoState(videoName);
@@ -34,6 +39,8 @@ public class SuggesterMode implements LagmarkerMode {
 		this.lprofile = lprofile;
 		this.outputPrefix = outputPrefix;
 		this.outputFolder = outputFolder;
+		
+		suggester = new SISuggester(outputFolder.resolve("sisuggestions"));
 	}
 
 	@Override
@@ -47,9 +54,7 @@ public class SuggesterMode implements LagmarkerMode {
 		
 		processVideoStream();
 		
-		// TODO
-		// parse suggester configuration
-		// read white flash offset from args
+		// TODO read white flash offset from args
 		
 		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + "_suggest.lprofile"));
 		lprofile.dumpFrameBeginnings(outputFolder.resolve("beginFrames"));
@@ -134,9 +139,16 @@ public class SuggesterMode implements LagmarkerMode {
 	}
 
 	protected void processFrame(VideoFrame currFrame) {
+		if(suggester.isActive())
+			suggester.update(currFrame);
+		
 		if (isLagBeginFrame(currFrame)) {
+			suggester.terminate();
+
 			Lag newLag = lprofile.addNewLag(currFrame);
 			System.out.println(String.format("LAG %d: Beginning found at frame %s.", newLag.lagId, currFrame.toString()));
+			
+			suggester.start(newLag, new SuggesterConfParams(), currFrame); // TODO parse sugg config
 		}
 	}
 

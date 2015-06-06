@@ -14,7 +14,7 @@ import mobileworkloads.jlagmarker.video.VideoFrame;
 public class LagProfile {
 
 	private static final String LAGPROFILE_HEADER = "lagId;startFrame;endFrame";
-	private static final String BEGIN_FRAME_NAME = "lag_%03d_beg_%d.ppm";
+	private static final String FILE_NAME_BEGIN_FORMAT = "lag_%03d_beg_%d.ppm";
 
 	private int nextLagId = 0;
 	
@@ -65,7 +65,7 @@ public class LagProfile {
 		for(Lag l : lags) {
 			try {
 				l.startFrame.dataBuffer.writeToFile(outputFolder.resolve(String
-						.format(BEGIN_FRAME_NAME, l.lagId,l.startFrame.videoFrameId)));
+						.format(FILE_NAME_BEGIN_FORMAT, l.lagId,l.startFrame.videoFrameId)));
 			} catch (IOException e) {
 				throw new UncheckedIOException("Error creating begin image for lag: " + l.lagId, e);
 			}
