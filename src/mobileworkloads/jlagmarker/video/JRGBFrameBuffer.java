@@ -1,6 +1,7 @@
 package mobileworkloads.jlagmarker.video;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class JRGBFrameBuffer implements Cloneable {
 	public static final int CHANNEL_NUM = 3;
@@ -46,8 +47,8 @@ public class JRGBFrameBuffer implements Cloneable {
 		buffer[idx] = (byte) value;
 	}
 	
-	public void writeToFile(String filename) throws IOException {
-		FileOutputStream out = new FileOutputStream(filename);
+	public void writeToFile(Path filename) throws IOException {
+		FileOutputStream out = new FileOutputStream(filename.toString());
 		out.write(("P6\n" + getWidth() + " " + getHeight() + "\n255\n").getBytes()); // write header
 		out.write(buffer);
 		out.close();

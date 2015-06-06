@@ -50,9 +50,9 @@ public class SuggesterMode implements LagmarkerMode {
 		// TODO
 		// parse suggester configuration
 		// read white flash offset from args
-
 		
 		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + "_suggest.lprofile"));
+		lprofile.dumpFrameBeginnings(outputFolder.resolve("beginFrames"));
 
 		long runtimeMS = (System.currentTimeMillis() - startTimeMS);
 		dumpRunStats(outputFolder.resolve(outputPrefix + "_runstats.csv"), runtimeMS);
