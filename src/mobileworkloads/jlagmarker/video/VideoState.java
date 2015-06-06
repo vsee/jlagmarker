@@ -19,10 +19,13 @@ public class VideoState {
 	
 	private VideoFrame currFrame;
 	
+	private boolean endOfStream;
+	
 	public VideoState(String fileName) {
 		
 		videoFileName = fileName;
 		currFrame = null;
+		endOfStream = false;
 		
 		if(!lnativeAllocVideoState()) {
 			lnativeFreeVideoState();
@@ -36,14 +39,22 @@ public class VideoState {
 		super.finalize();
 	}
 	
+	public String getVideoFileName() {
+		return videoFileName;
+	}
+	
 	private void updateFrameCounter() {
 		currFrameId++;
 		currTimeNS += timePerFrameNS;		
 	}
 	
 	public VideoFrame decodeNextVideoFrame() {
-		if(!lnativeDecodeNextVideoFrame())
-			throw new RuntimeException("Decoding of next video frame failed.");
+		if(!lnativeDecodeNextVideoFrame()) {
+			if(isEndOfStream())
+				return null;
+			else
+				throw new RuntimeException("Decoding of next video frame failed.");
+		}
 		
 		JRGBFrameBuffer buff = new JRGBFrameBuffer();
 		
@@ -74,6 +85,10 @@ public class VideoState {
 	
 	public VideoFrame extractCurrentFrame() {
 		return currFrame != null ? currFrame.clone() : null;
+	}
+	
+	public boolean isEndOfStream() {
+		return endOfStream;
 	}
 		
 	private native boolean lnativeAllocVideoState();

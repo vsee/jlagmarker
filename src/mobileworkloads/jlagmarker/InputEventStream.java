@@ -12,11 +12,17 @@ import mobileworkloads.mlgovernor.res.dp.IntervalDataPoint;
 
 public class InputEventStream {
 
+	protected final Path inputFileName;
 	protected final IDPResourceTrace inputStream;
 	protected int latestMovementDPIdxCache = 0;
 	
 	public InputEventStream(Path resFile) throws IOException {
-		inputStream = new IDPResourceTrace(ResourceManager.parseIntervalDataTrace(resFile));
+		inputFileName = resFile;
+		inputStream = new IDPResourceTrace(ResourceManager.parseIntervalDataTrace(inputFileName));
+	}
+	
+	public Path getInputFileName() {
+		return inputFileName;
 	}
 	
 	public boolean didFingerGoDown(long startTimeUS, long endTimeUS) {

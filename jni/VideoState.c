@@ -170,6 +170,9 @@ JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnat
 		}
 	}
 
+	jfieldID fidEndOfStream = (*env)->GetFieldID(env, videoStateClass, "endOfStream", "Z");
+	(*env)->SetBooleanField(env, videoState, fidEndOfStream, true);
+
 	return false;
 }
 

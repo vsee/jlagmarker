@@ -39,6 +39,8 @@ public class MaskManager {
 		if(maskSpecFile == null || !Files.isRegularFile(maskSpecFile))
 			throw new IllegalArgumentException("Given mask specification file invalid: " + maskSpecFile);
 
+		System.out.println("Parsing mask configuration: " + maskSpecFile + " ...");
+		
 		List<String> lines;
         try (BufferedReader reader = new BufferedReader(Files.newBufferedReader(maskSpecFile, Charset.forName("UTF-8")))) {      	
         	lines = 
