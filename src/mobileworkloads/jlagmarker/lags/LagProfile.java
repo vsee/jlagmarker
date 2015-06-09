@@ -20,8 +20,6 @@ public class LagProfile {
 	
 	public final List<Lag> lags;
 	
-	// TODO add suggester configuration
-	
 	public LagProfile() {
 		lags = new ArrayList<Lag>();
 	}

@@ -6,12 +6,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import mobileworkloads.jlagmarker.lags.Lag;
+import mobileworkloads.jlagmarker.suggesting.SuggesterConfig.SuggesterConfParams;
 import mobileworkloads.jlagmarker.video.FrameBufferUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 
 public class SISuggester extends Suggester {
 	
 	// TODO cached comparison
+	// TODO add chosen sugg config output
 	
 	protected boolean firstChangeFound;	// wait until a first change was found
 	protected int stillFrameCount;	  	// look for a still period of at least x frames
@@ -88,7 +90,7 @@ public class SISuggester extends Suggester {
 	protected void saveSuggestion(Lag lag, VideoFrame suggFrame, String mask) {
 		System.out.println(String.format("LAG %d: New suggestion found at frame %s!", lag.lagId, suggFrame.toString()));
 
-		suggFrame.applyMask(mask);
+		if(mask != null) suggFrame.applyMask(mask);
 		try {
 			suggFrame.dataBuffer.writeToFile(outputFolder.resolve(String
 					.format(FILE_NAME_SUGGESTION_FORMAT, lag.lagId,	suggFrame.videoFrameId)));

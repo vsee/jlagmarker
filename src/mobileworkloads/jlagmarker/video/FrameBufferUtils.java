@@ -47,7 +47,7 @@ public final class FrameBufferUtils {
 			VideoFrame frame1, String mask, int threshold, int maxPixelIgnore) {
 		
 		List<String> masks = new ArrayList<String>();
-		masks.add(mask);
+		if(mask != null) masks.add(mask);
 
 		return cmpRGBBuff(frame0, frame1, masks, threshold, maxPixelIgnore);
 	}

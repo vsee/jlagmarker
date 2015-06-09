@@ -12,7 +12,8 @@ public class LagMarkerArgs {
 			"-mode str - Run mode of lagmarker [SUGGESTER, DETECTOR]\n" +
 			"-video file - Path to the video file to be processed\n" +
 			"-input file - Path to the movement input file to be processed\n" +
-			"-masks file - Path to the mask configuration file to be used\n\n" +
+			"-masks file - Path to the mask configuration file to be used\n" +
+			"-sconf file - Path to the suggester configuration file to be used\n\n" +
 			
 			"-outPref String - Output prefix used as identifier for the resulting output\n" +
 			"-outDir file - Path to the output folder for generated files\n";
@@ -20,6 +21,7 @@ public class LagMarkerArgs {
 	public LagmarkerModeType modeType;
 	public Path videoFile;
 	public Path maskSpec;
+	public Path sconfFile;
 	public Path inputData;
 	public String outputPrefix;
 	public Path outputFolder;
@@ -36,6 +38,7 @@ public class LagMarkerArgs {
 		System.out.println("VIDEO: " + videoFile);
 		System.out.println("INPUT: " + inputData);
 		System.out.println("MASKS: " + maskSpec);
+		System.out.println("SUGGESTER CONFIG: " + sconfFile);
 		
 		System.out.println("OUTPUT: " + outputFolder);
 		System.out.println("OUTPUT PREFIX: " + outputPrefix);
@@ -58,6 +61,10 @@ public class LagMarkerArgs {
 		optionString = Utils.getOption("masks", args);
 		if(optionString.isEmpty()) throw new IllegalArgumentException("No valid mask specification given.");
 		maskSpec = Paths.get(optionString);
+		
+		optionString = Utils.getOption("sconf", args);
+		if(optionString.isEmpty()) throw new IllegalArgumentException("No valid suggester configuration given.");
+		sconfFile = Paths.get(optionString);
 		
 		optionString = Utils.getOption("input", args);
 		if(optionString.isEmpty()) throw new IllegalArgumentException("No valid input path specified.");

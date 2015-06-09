@@ -1,6 +1,7 @@
 package mobileworkloads.jlagmarker.suggesting;
 
 import mobileworkloads.jlagmarker.lags.Lag;
+import mobileworkloads.jlagmarker.suggesting.SuggesterConfig.SuggesterConfParams;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 
 public abstract class Suggester {

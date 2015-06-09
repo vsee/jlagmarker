@@ -13,7 +13,7 @@ import mobileworkloads.jlagmarker.lags.Lag;
 import mobileworkloads.jlagmarker.lags.LagProfile;
 import mobileworkloads.jlagmarker.suggesting.SISuggester;
 import mobileworkloads.jlagmarker.suggesting.Suggester;
-import mobileworkloads.jlagmarker.suggesting.SuggesterConfParams;
+import mobileworkloads.jlagmarker.suggesting.SuggesterConfig;
 import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.video.VideoState;
@@ -23,6 +23,7 @@ public class SuggesterMode implements LagmarkerMode {
 
 	protected final VideoState vstate;
 	protected final InputEventStream ieStream;
+	protected final SuggesterConfig sconf;
 	protected final LagProfile lprofile;
 	
 	protected final String outputPrefix;
@@ -33,9 +34,10 @@ public class SuggesterMode implements LagmarkerMode {
 	protected final Suggester suggester;
 	
 	public SuggesterMode(String videoName, InputEventStream ieStream,
-			LagProfile lprofile, String outputPrefix, Path outputFolder) {
+			SuggesterConfig sconf, LagProfile lprofile, String outputPrefix, Path outputFolder) {
 		vstate = new VideoState(videoName);
 		this.ieStream = ieStream;
+		this.sconf = sconf;
 		this.lprofile = lprofile;
 		this.outputPrefix = outputPrefix;
 		this.outputFolder = outputFolder;
@@ -82,7 +84,7 @@ public class SuggesterMode implements LagmarkerMode {
 			statWriter.newLine();
 			statWriter.write("input file;" + ieStream.getInputFileName());
 			statWriter.newLine();
-			statWriter.write("suggester config;" + "TODO");
+			statWriter.write("suggester config;" + sconf.getConfigFileName());
 			statWriter.newLine();
 
 			System.out.println("Run statistics written to " + outputFileName);
@@ -119,8 +121,7 @@ public class SuggesterMode implements LagmarkerMode {
 	
 	protected boolean isStartFrame(VideoFrame frame) {
 		// mask out control panel
-		if(!frame.applyMask("STATUS_BAR_MASK_PORTRAIT")) 
-			throw new RuntimeException("Failed to apply mask to frame: STATUS_BAR_MASK_PORTRAIT");
+		frame.applyMask("STATUS_BAR_MASK_PORTRAIT");
 
 		// look for completely white frame
 		for (int i = 0; i < frame.dataBuffer.getWidth() * frame.dataBuffer.getHeight() * JRGBFrameBuffer.CHANNEL_NUM; i++) {
@@ -148,7 +149,7 @@ public class SuggesterMode implements LagmarkerMode {
 			Lag newLag = lprofile.addNewLag(currFrame);
 			System.out.println(String.format("LAG %d: Beginning found at frame %s.", newLag.lagId, currFrame.toString()));
 			
-			suggester.start(newLag, new SuggesterConfParams(), currFrame); // TODO parse sugg config
+			suggester.start(newLag, sconf.getParams(newLag.lagId), currFrame);
 		}
 	}
 

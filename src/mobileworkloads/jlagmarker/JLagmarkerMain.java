@@ -12,6 +12,7 @@ import mobileworkloads.jlagmarker.lags.LagProfile;
 import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
 import mobileworkloads.jlagmarker.markermodes.SuggesterMode;
 import mobileworkloads.jlagmarker.masking.MaskManager;
+import mobileworkloads.jlagmarker.suggesting.SuggesterConfig;
 
 public class JLagmarkerMain {
 		
@@ -44,11 +45,19 @@ public class JLagmarkerMain {
 			throw new UncheckedIOException("Error parsing input data file [" + args.inputData + "]", e);
 		}
 		
+		SuggesterConfig sconf = null;
+		try {
+			sconf = new SuggesterConfig(args.sconfFile);
+			System.out.println();
+		} catch (IOException e) {
+			throw new UncheckedIOException("Error parsing suggester configuration file [" + args.sconfFile + "]", e);
+		}
+		
 		LagProfile lprofile = new LagProfile();
 		
 		switch(args.modeType) {
 			case SUGGESTER:
-				mode = new SuggesterMode(args.videoFile.toString(), ieStream, lprofile, args.outputPrefix, args.outputFolder);
+				mode = new SuggesterMode(args.videoFile.toString(), ieStream, sconf, lprofile, args.outputPrefix, args.outputFolder);
 				break;
 			case DETECTOR:
 				// TODO implement DetectorMode

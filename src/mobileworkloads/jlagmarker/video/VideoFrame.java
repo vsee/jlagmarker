@@ -27,13 +27,12 @@ public class VideoFrame implements Cloneable {
 		appliedMasks = new ArrayList<String>();
 	}
 
-	public boolean applyMask(String maskName) {
+	public void applyMask(String maskName) {
 		if(MaskManager.getInstance().maskFrame(this, maskName)) {
 			appliedMasks.add(maskName);
-			return true;
+		} else {
+			throw new RuntimeException("Failed to apply mask to frame: " + maskName);
 		}
-		
-		return false;
 	}
 	
 	public VideoFrame clone() {
