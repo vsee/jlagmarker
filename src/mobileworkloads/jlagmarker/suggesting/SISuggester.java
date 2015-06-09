@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import mobileworkloads.jlagmarker.lags.Lag;
+import mobileworkloads.jlagmarker.video.FrameBufferUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 
 public class SISuggester extends Suggester {
@@ -49,7 +50,7 @@ public class SISuggester extends Suggester {
 	@Override
 	public void update(VideoFrame currentFrame) {
 
-		boolean framesEqual = compareFrames(currentFrame, latestStillFrame);
+		boolean framesEqual = compareFrames(currentFrame, latestStillFrame, sconf.mask, sconf.maxDiffThreshold, sconf.pixIgnore);
 
 		if (!firstChangeFound) {
 			// current image differs from previous one --> found first change
@@ -94,9 +95,10 @@ public class SISuggester extends Suggester {
 		}
 	}
 
-	protected boolean compareFrames(VideoFrame frameA, VideoFrame frameB) {
-		//TODO top todo you need to fix this stuff
-		return true;
+	protected boolean compareFrames(VideoFrame frame0, VideoFrame frame1, String mask, int threshold, int maxPixelIgnore) {
+
+		if(frame0.equals(frame1)) return true;
+		else return FrameBufferUtils.cmpRGBBuff(frame0, frame1, mask, threshold, maxPixelIgnore);
 	}
 	
 }
