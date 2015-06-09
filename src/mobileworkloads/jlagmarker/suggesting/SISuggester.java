@@ -2,7 +2,6 @@ package mobileworkloads.jlagmarker.suggesting;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import mobileworkloads.jlagmarker.lags.Lag;
@@ -12,8 +11,7 @@ import mobileworkloads.jlagmarker.video.VideoFrame;
 
 public class SISuggester extends Suggester {
 	
-	// TODO cached comparison
-	// TODO add chosen sugg config output
+	// TODO imagemagick comparison
 	
 	protected boolean firstChangeFound;	// wait until a first change was found
 	protected int stillFrameCount;	  	// look for a still period of at least x frames
@@ -22,21 +20,10 @@ public class SISuggester extends Suggester {
 	
 	protected SuggesterConfParams sconf;	// suggester configuration parameters for the current lag
 	protected Lag currLag;
-	
-	protected Path outputFolder;
-	
+			
 	// Still image suggester
 	public SISuggester(Path outputFolder) {
-		if(!(Files.exists(outputFolder) && Files.isDirectory(outputFolder))) {
-			try {
-				Files.createDirectory(outputFolder);
-				System.out.println("SI suggester output directory created: " + outputFolder);
-			} catch (IOException e) {
-				throw new UncheckedIOException("Error creating SI suggester output directory: " + outputFolder, e);
-			}
-		}
-		
-		this.outputFolder = outputFolder; 
+		super(outputFolder);
 	}
 	
 	@Override
@@ -49,6 +36,7 @@ public class SISuggester extends Suggester {
 		
 		this.currLag = currLag;
 		this.sconf = sconf;
+		System.out.println("LAG " + currLag.lagId + ": Suggester params " + sconf);
 	}
 	
 	@Override
@@ -88,8 +76,8 @@ public class SISuggester extends Suggester {
 	}
 
 	protected void saveSuggestion(Lag lag, VideoFrame suggFrame, String mask) {
-		System.out.println(String.format("LAG %d: New suggestion found at frame %s!", lag.lagId, suggFrame.toString()));
-
+		lag.addSuggestion(suggFrame);
+ 		
 		if(mask != null) suggFrame.applyMask(mask);
 		try {
 			suggFrame.dataBuffer.writeToFile(outputFolder.resolve(String

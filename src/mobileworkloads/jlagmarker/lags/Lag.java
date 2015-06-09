@@ -1,6 +1,10 @@
 package mobileworkloads.jlagmarker.lags;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import mobileworkloads.jlagmarker.video.VideoFrame;
+import mobileworkloads.mlgovernor.res.CSVResourceTools;
 
 public class Lag {
 
@@ -16,10 +20,13 @@ public class Lag {
 	public LagState state;
 	private VideoFrame endFrame;
 	
+	protected final List<Integer> suggIds;
+	
 	public Lag(int lagId, VideoFrame startFrame) {
 		this.lagId = lagId;
 		this.startFrame = startFrame;
 		state = LagState.NA;
+		suggIds = new ArrayList<Integer>();
 	}
 	
 	public void setEndFrame(VideoFrame endFrame) {
@@ -27,10 +34,16 @@ public class Lag {
 		state = LagState.ENDED;
 	}
 	
+	public void addSuggestion(VideoFrame sugg) {
+		System.out.println(String.format("LAG %d: New suggestion found at frame %s!", lagId, sugg.toString()));
+		
+		suggIds.add(sugg.videoFrameId);
+	}
+	
 	public String toCSVEntry() {
 		StringBuilder bld = new StringBuilder();
-		bld.append(lagId).append(";")
-		.append(startFrame.videoFrameId).append(";");
+		bld.append(lagId).append(CSVResourceTools.SEPARATOR)
+		.append(startFrame.videoFrameId).append(CSVResourceTools.SEPARATOR);
 		
 		switch(state) {
 			case ENDED:
@@ -43,6 +56,12 @@ public class Lag {
 				break;
 			default:
 				throw new RuntimeException("Unknown lag state: " + state.name());
+		}
+		
+		bld.append(CSVResourceTools.SEPARATOR);
+		
+		for(Integer suggId : suggIds) {
+			bld.append(suggId).append(" ");
 		}
 		
 		return bld.toString();

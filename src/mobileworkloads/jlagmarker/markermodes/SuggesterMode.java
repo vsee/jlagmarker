@@ -17,6 +17,7 @@ import mobileworkloads.jlagmarker.suggesting.SuggesterConfig;
 import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.video.VideoState;
+import mobileworkloads.mlgovernor.res.CSVResourceTools;
 
 
 public class SuggesterMode implements LagmarkerMode {
@@ -70,21 +71,25 @@ public class SuggesterMode implements LagmarkerMode {
 	protected void dumpRunStats(Path outputFileName, long runtimeMS) {
 		try(BufferedWriter statWriter = Files.newBufferedWriter(outputFileName, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
 			
-			statWriter.write("Runtime in MS;" + runtimeMS);
+			statWriter.write("Runtime in MS" + CSVResourceTools.SEPARATOR + runtimeMS);
 			statWriter.newLine();
-			statWriter.write("Runtime Prefix;" + outputPrefix);
+			statWriter.write("Output Prefix" + CSVResourceTools.SEPARATOR + outputPrefix);
 			statWriter.newLine();
-			statWriter.write("lag count;" + lprofile.lags.size());
+			statWriter.write("Output Folder" + CSVResourceTools.SEPARATOR + outputFolder);
 			statWriter.newLine();
-			statWriter.write("start frame;" + wlStartFrame.videoFrameId);
+			statWriter.write("lag count" + CSVResourceTools.SEPARATOR + lprofile.lags.size());
 			statWriter.newLine();
-			statWriter.write("start frame offset US;" + wlStartFrame.startTimeUS);
+			statWriter.write("start frame" + CSVResourceTools.SEPARATOR + wlStartFrame.videoFrameId);
 			statWriter.newLine();
-			statWriter.write("video file;" + vstate.getVideoFileName());
+			statWriter.write("start frame offset US" + CSVResourceTools.SEPARATOR + wlStartFrame.startTimeUS);
 			statWriter.newLine();
-			statWriter.write("input file;" + ieStream.getInputFileName());
+			statWriter.write("video file" + CSVResourceTools.SEPARATOR + vstate.getVideoFileName());
 			statWriter.newLine();
-			statWriter.write("suggester config;" + sconf.getConfigFileName());
+			statWriter.write("input file" + CSVResourceTools.SEPARATOR + ieStream.getInputFileName());
+			statWriter.newLine();
+			statWriter.write("suggester config" + CSVResourceTools.SEPARATOR + sconf.getConfigFileName());
+			statWriter.newLine();
+			statWriter.write("suggestion output" + CSVResourceTools.SEPARATOR + suggester.getOutputFolder());
 			statWriter.newLine();
 
 			System.out.println("Run statistics written to " + outputFileName);
@@ -147,7 +152,7 @@ public class SuggesterMode implements LagmarkerMode {
 			suggester.terminate();
 
 			Lag newLag = lprofile.addNewLag(currFrame);
-			System.out.println(String.format("LAG %d: Beginning found at frame %s.", newLag.lagId, currFrame.toString()));
+			System.out.println(String.format("\nLAG %d: Beginning found at frame %s.", newLag.lagId, currFrame.toString()));
 			
 			suggester.start(newLag, sconf.getParams(newLag.lagId), currFrame);
 		}

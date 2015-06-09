@@ -25,6 +25,17 @@ public class SuggesterConfig {
 		public String mask;
 		public int occurrence;	 // specify how often the suggested image is found before it is accepted as valid
 		public int runInterval; // specify how many new beginnings can be found before this worker is removed
+		
+		@Override
+		public String toString() {
+			return new StringBuilder("[").append(maxDiffThreshold)
+					.append(", ").append(stillFrames)
+					.append(", ").append(pixIgnore)
+					.append(", ").append(mask)
+					.append(", ").append(occurrence)
+					.append(", ").append(runInterval)
+					.append("]").toString();
+		}
 
 	}
 

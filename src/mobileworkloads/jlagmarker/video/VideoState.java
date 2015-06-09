@@ -71,7 +71,6 @@ public class VideoState {
 	
 	@Override
 	public String toString() {
-		// TODO make this more pretty
 		return currFrameId + " " + currTimeNS;
 	}
 	
