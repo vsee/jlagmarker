@@ -11,6 +11,8 @@ import mobileworkloads.jlagmarker.video.VideoFrame;
 
 public class SISuggester extends Suggester {
 	
+	// TODO cached comparison
+	
 	protected boolean firstChangeFound;	// wait until a first change was found
 	protected int stillFrameCount;	  	// look for a still period of at least x frames
 	
