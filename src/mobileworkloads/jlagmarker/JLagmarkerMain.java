@@ -12,7 +12,7 @@ import mobileworkloads.jlagmarker.lags.LagProfile;
 import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
 import mobileworkloads.jlagmarker.markermodes.SuggesterMode;
 import mobileworkloads.jlagmarker.masking.MaskManager;
-import mobileworkloads.jlagmarker.suggesting.SuggesterConfig;
+import mobileworkloads.jlagmarker.worker.SuggesterConfig;
 
 public class JLagmarkerMain {
 		

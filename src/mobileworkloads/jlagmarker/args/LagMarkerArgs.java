@@ -3,7 +3,7 @@ package mobileworkloads.jlagmarker.args;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import mobileworkloads.jlagmarker.markermodes.LagmarkerModeType;
+import mobileworkloads.jlagmarker.markermodes.LagmarkerMode.LagmarkerModeType;
 import weka.core.Utils;
 
 public class LagMarkerArgs {

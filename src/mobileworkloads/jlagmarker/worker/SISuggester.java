@@ -1,13 +1,13 @@
-package mobileworkloads.jlagmarker.suggesting;
+package mobileworkloads.jlagmarker.worker;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
 import mobileworkloads.jlagmarker.lags.Lag;
-import mobileworkloads.jlagmarker.suggesting.SuggesterConfig.SuggesterConfParams;
 import mobileworkloads.jlagmarker.video.FrameBufferUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
+import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
 
 public class SISuggester extends Suggester {
 	
@@ -27,9 +27,7 @@ public class SISuggester extends Suggester {
 	}
 	
 	@Override
-	public void start(Lag currLag, SuggesterConfParams sconf, VideoFrame currFrame) {
-		super.start(currLag, sconf, currFrame);
-		
+	public void setupSuggester(Lag currLag, SuggesterConfParams sconf, VideoFrame currFrame) {
 		firstChangeFound = false;
 		stillFrameCount = 0;
 		latestStillFrame = currFrame;
@@ -91,6 +89,5 @@ public class SISuggester extends Suggester {
 
 		if(frame0.equals(frame1)) return true;
 		else return FrameBufferUtils.cmpRGBBuff(frame0, frame1, mask, threshold, maxPixelIgnore);
-	}
-	
+	}	
 }

@@ -6,69 +6,50 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Calendar;
 
 import mobileworkloads.jlagmarker.InputEventStream;
 import mobileworkloads.jlagmarker.lags.Lag;
 import mobileworkloads.jlagmarker.lags.LagProfile;
-import mobileworkloads.jlagmarker.suggesting.SISuggester;
-import mobileworkloads.jlagmarker.suggesting.Suggester;
-import mobileworkloads.jlagmarker.suggesting.SuggesterConfig;
-import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
 import mobileworkloads.jlagmarker.video.VideoFrame;
-import mobileworkloads.jlagmarker.video.VideoState;
+import mobileworkloads.jlagmarker.worker.SISuggester;
+import mobileworkloads.jlagmarker.worker.Suggester;
+import mobileworkloads.jlagmarker.worker.SuggesterConfig;
+import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
+import mobileworkloads.jlagmarker.worker.VStreamWorker;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
 
+public class SuggesterMode extends LagmarkerMode {
 
-public class SuggesterMode implements LagmarkerMode {
-
-	protected final VideoState vstate;
-	protected final InputEventStream ieStream;
 	protected final SuggesterConfig sconf;
-	protected final LagProfile lprofile;
-	
-	protected final String outputPrefix;
-	protected final Path outputFolder;
-	
-	protected long inputFlashOffsetNS;
-	protected VideoFrame wlStartFrame;
-	
 	protected final Suggester suggester;
 	
 	public SuggesterMode(String videoName, long inputFlashOffsetNS, InputEventStream ieStream,
 			SuggesterConfig sconf, LagProfile lprofile, String outputPrefix, Path outputFolder) {
-		vstate = new VideoState(videoName);
-		this.inputFlashOffsetNS = inputFlashOffsetNS;
-		this.ieStream = ieStream;
+		super(videoName, inputFlashOffsetNS, ieStream, lprofile,outputPrefix, outputFolder);
 		this.sconf = sconf;
-		this.lprofile = lprofile;
-		this.outputPrefix = outputPrefix;
-		this.outputFolder = outputFolder;
 		
 		suggester = new SISuggester(outputFolder.resolve("sisuggestions"));
 	}
 
 	@Override
-	public void run() {
-		System.out.println("##### Running Suggester Mode #####");
-		System.out.println("Run Start at: " + Calendar.getInstance().getTime());
-		long startTimeMS = System.currentTimeMillis();
-		
-		vstate.dumpVideoFormat();
-		System.out.println("\n\n");
-		
-		processVideoStream();
-		
-		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + "_suggest.lprofile"));
-		lprofile.dumpFrameBeginnings(outputFolder.resolve("beginFrames"));
-
-		long runtimeMS = (System.currentTimeMillis() - startTimeMS);
-		dumpRunStats(outputFolder.resolve(outputPrefix + "_runstats.csv"), runtimeMS);
-		
-		System.out.println("Run terminated successfully at: " + Calendar.getInstance().getTime() + " after " + (runtimeMS / 1000f) + " seconds.");
+	protected VStreamWorker getWorker() {
+		return suggester;
+	}
+	
+	@Override
+	public LagmarkerModeType getModeType() {
+		return LagmarkerModeType.SUGGESTER;
+	}
+	
+	@Override
+	protected void setupWorker(Lag currLag, VideoFrame currFrame) {
+		suggester.setupSuggester(currLag, (SuggesterConfParams) sconf.getParams(currLag.lagId), currFrame);
 	}
 
 	protected void dumpRunStats(Path outputFileName, long runtimeMS) {
+		
+		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + "_suggest.lprofile"));
+		
 		try(BufferedWriter statWriter = Files.newBufferedWriter(outputFileName, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
 			
 			statWriter.write("Runtime in MS" + CSVResourceTools.SEPARATOR + runtimeMS);
@@ -98,87 +79,4 @@ public class SuggesterMode implements LagmarkerMode {
 			throw new UncheckedIOException(e);
 		}
 	}
-
-	protected void processVideoStream() {
-		System.out.println("### Searching for workload replay start frame ...");
-		
-		if(!findWorkloadStartFrame()) throw new RuntimeException("No workload start frame found in given video.");
-		
-		System.out.println("### Marking lags ...");
-		
-		findLags();
-	}
-	
-	protected boolean findWorkloadStartFrame() {
-		while(true) {
-			VideoFrame frame = vstate.decodeNextVideoFrame();
-			if(frame == null) return false;
-			
-			if(isStartFrame(frame)) {
-				
-				/* It can happen, especially for slow frequencies, that the input events belonging
-				 * to the white flash happen significantly earlier (more than a frame) than the 
-				 * flash event on the screen.
-				 * 
-				 * This leads to an offset of the beginning of all successive lag events since
-				 * the start time is normalised to the start time of the flash frame and not 
-				 * the actual start input. Hence all successive input events would happen later.
-				 * 
-				 * To avoid this, we reverse the video by the given input-flash-offset we read from
-				 * the trace-cmd data, as soon as we find the white flash. The reversed frame is then
-				 * the frame where the start input happens and therefore the correct start frame.
-				 */
-				int startFrameId = frame.videoFrameId - 
-						(int) Math.ceil(inputFlashOffsetNS / 1000000000.0 * vstate.getFrameRate());
-				
-				vstate.skipBackwards(frame.videoFrameId - startFrameId);
-				wlStartFrame = vstate.extractCurrentFrame();
-				
-				System.out.println("Workload start frame ["
-						+ wlStartFrame.videoFrameId + "] found at: "
-						+ wlStartFrame.startTimeUS + " US");
-				return true;
-			}
-		}
-	}
-	
-	protected boolean isStartFrame(VideoFrame frame) {
-		// mask out control panel
-		frame.applyMask("STATUS_BAR_MASK_PORTRAIT");
-
-		// look for completely white frame
-		for (int i = 0; i < frame.dataBuffer.getWidth() * frame.dataBuffer.getHeight() * JRGBFrameBuffer.CHANNEL_NUM; i++) {
-			if(frame.dataBuffer.getRawChannel(i) != 0xFF) return false;
-		}
-
-		return true;
-	}
-
-	protected void findLags() {
-		VideoFrame currFrame = vstate.extractCurrentFrame();
-		while(currFrame != null) {
-			processFrame(currFrame);
-			currFrame = vstate.decodeNextVideoFrame();
-		}
-	}
-
-	protected void processFrame(VideoFrame currFrame) {
-		if(suggester.isActive())
-			suggester.update(currFrame);
-		
-		if (isLagBeginFrame(currFrame)) {
-			suggester.terminate();
-
-			Lag newLag = lprofile.addNewLag(currFrame);
-			System.out.println(String.format("\nLAG %d: Beginning found at frame %s.", newLag.lagId, currFrame.toString()));
-			
-			suggester.start(newLag, sconf.getParams(newLag.lagId), currFrame);
-		}
-	}
-
-	protected boolean isLagBeginFrame(VideoFrame currFrame) {
-		return ieStream.didFingerGoDown(currFrame.startTimeUS
-				- wlStartFrame.startTimeUS, currFrame.endTimeUS - wlStartFrame.startTimeUS);
-	}
-
 }

@@ -1,22 +1,19 @@
-package mobileworkloads.jlagmarker.suggesting;
+package mobileworkloads.jlagmarker.worker;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import mobileworkloads.jlagmarker.lags.Lag;
-import mobileworkloads.jlagmarker.suggesting.SuggesterConfig.SuggesterConfParams;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 
-public abstract class Suggester {
-	
-	protected static final String FILE_NAME_SUGGESTION_FORMAT = "lag_%03d_sug_%d.ppm";
+public abstract class VStreamWorker {
 
 	protected boolean active = false;
+
 	protected Path outputFolder;
 
-	public Suggester(Path outputFolder) {
+	public VStreamWorker(Path outputFolder) {
 		if(!(Files.exists(outputFolder) && Files.isDirectory(outputFolder))) {
 			try {
 				Files.createDirectory(outputFolder);
@@ -29,6 +26,10 @@ public abstract class Suggester {
 		this.outputFolder = outputFolder;
 	}
 	
+	public String getOutputFolder() {
+		return outputFolder.toString();
+	}
+	
 	public boolean isActive() {
 		return active;
 	}
@@ -39,11 +40,7 @@ public abstract class Suggester {
 		active = false;
 	}
 
-	public void start(Lag currLag, SuggesterConfParams sconf, VideoFrame currFrame) {
+	public void start() {
 		active = true;
-	}
-
-	public String getOutputFolder() {
-		return outputFolder.toString();
 	}
 }
