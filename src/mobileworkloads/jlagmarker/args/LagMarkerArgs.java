@@ -11,6 +11,7 @@ public class LagMarkerArgs {
 	protected static final String USAGE = "Usage Args:\n" +
 			"-mode str - Run mode of lagmarker [SUGGESTER, DETECTOR]\n" +
 			"-video file - Path to the video file to be processed\n" +
+			"-ioffset num - Offset between white flash and input start in nano seconds\n" +
 			"-input file - Path to the movement input file to be processed\n" +
 			"-masks file - Path to the mask configuration file to be used\n" +
 			"-sconf file - Path to the suggester configuration file to be used\n\n" +
@@ -20,6 +21,7 @@ public class LagMarkerArgs {
 	
 	public LagmarkerModeType modeType;
 	public Path videoFile;
+	public long inputFlashOffsetNS;
 	public Path maskSpec;
 	public Path sconfFile;
 	public Path inputData;
@@ -36,6 +38,7 @@ public class LagMarkerArgs {
 		
 		System.out.println("MODE: " + modeType.name());
 		System.out.println("VIDEO: " + videoFile);
+		System.out.println("IOFFSET: " + inputFlashOffsetNS);
 		System.out.println("INPUT: " + inputData);
 		System.out.println("MASKS: " + maskSpec);
 		System.out.println("SUGGESTER CONFIG: " + sconfFile);
@@ -57,6 +60,10 @@ public class LagMarkerArgs {
 		optionString = Utils.getOption("video", args);
 		if(optionString.isEmpty()) throw new IllegalArgumentException("No valid video path specified.");
 		videoFile = Paths.get(optionString);
+		
+		optionString = Utils.getOption("ioffset", args);
+		if(optionString.isEmpty()) throw new IllegalArgumentException("No valid input offset specified.");
+		inputFlashOffsetNS = Long.parseLong(optionString);
 		
 		optionString = Utils.getOption("masks", args);
 		if(optionString.isEmpty()) throw new IllegalArgumentException("No valid mask specification given.");

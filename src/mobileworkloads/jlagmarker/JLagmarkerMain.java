@@ -57,7 +57,8 @@ public class JLagmarkerMain {
 		
 		switch(args.modeType) {
 			case SUGGESTER:
-				mode = new SuggesterMode(args.videoFile.toString(), ieStream, sconf, lprofile, args.outputPrefix, args.outputFolder);
+				mode = new SuggesterMode(args.videoFile.toString(), args.inputFlashOffsetNS, 
+						ieStream, sconf, lprofile, args.outputPrefix, args.outputFolder);
 				break;
 			case DETECTOR:
 				// TODO implement DetectorMode

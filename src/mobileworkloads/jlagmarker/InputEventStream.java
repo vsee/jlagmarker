@@ -38,7 +38,7 @@ public class InputEventStream {
 				&& startTimeUS == 0)
 			return true;
 		
-		// look if a change happend from "UP" to "DOWN"
+		// look if a change happened from "UP" to "DOWN"
 		FingerPositionType lastPos = null;
 		if(idpRes.DPs.size() > 1) {
 			for(IntervalDataPoint idp : idpRes.DPs) {

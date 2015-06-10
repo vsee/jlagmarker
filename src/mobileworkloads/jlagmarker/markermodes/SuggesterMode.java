@@ -30,13 +30,15 @@ public class SuggesterMode implements LagmarkerMode {
 	protected final String outputPrefix;
 	protected final Path outputFolder;
 	
+	protected long inputFlashOffsetNS;
 	protected VideoFrame wlStartFrame;
 	
 	protected final Suggester suggester;
 	
-	public SuggesterMode(String videoName, InputEventStream ieStream,
+	public SuggesterMode(String videoName, long inputFlashOffsetNS, InputEventStream ieStream,
 			SuggesterConfig sconf, LagProfile lprofile, String outputPrefix, Path outputFolder) {
 		vstate = new VideoState(videoName);
+		this.inputFlashOffsetNS = inputFlashOffsetNS;
 		this.ieStream = ieStream;
 		this.sconf = sconf;
 		this.lprofile = lprofile;
@@ -56,8 +58,6 @@ public class SuggesterMode implements LagmarkerMode {
 		System.out.println("\n\n");
 		
 		processVideoStream();
-		
-		// TODO read white flash offset from args
 		
 		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + "_suggest.lprofile"));
 		lprofile.dumpFrameBeginnings(outputFolder.resolve("beginFrames"));
@@ -115,7 +115,25 @@ public class SuggesterMode implements LagmarkerMode {
 			if(frame == null) return false;
 			
 			if(isStartFrame(frame)) {
-				wlStartFrame = frame; // TODO adapt start time by white flash offset from first input
+				
+				/* It can happen, especially for slow frequencies, that the input events belonging
+				 * to the white flash happen significantly earlier (more than a frame) than the 
+				 * flash event on the screen.
+				 * 
+				 * This leads to an offset of the beginning of all successive lag events since
+				 * the start time is normalised to the start time of the flash frame and not 
+				 * the actual start input. Hence all successive input events would happen later.
+				 * 
+				 * To avoid this, we reverse the video by the given input-flash-offset we read from
+				 * the trace-cmd data, as soon as we find the white flash. The reversed frame is then
+				 * the frame where the start input happens and therefore the correct start frame.
+				 */
+				int startFrameId = frame.videoFrameId - 
+						(int) Math.ceil(inputFlashOffsetNS / 1000000000.0 * vstate.getFrameRate());
+				
+				vstate.skipBackwards(frame.videoFrameId - startFrameId);
+				wlStartFrame = vstate.extractCurrentFrame();
+				
 				System.out.println("Workload start frame ["
 						+ wlStartFrame.videoFrameId + "] found at: "
 						+ wlStartFrame.startTimeUS + " US");
