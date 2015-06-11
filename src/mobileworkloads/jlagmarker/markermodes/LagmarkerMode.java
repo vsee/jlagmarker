@@ -1,6 +1,11 @@
 package mobileworkloads.jlagmarker.markermodes;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Calendar;
 
 import mobileworkloads.jlagmarker.InputEventStream;
@@ -10,6 +15,7 @@ import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.video.VideoState;
 import mobileworkloads.jlagmarker.worker.VStreamWorker;
+import mobileworkloads.mlgovernor.res.CSVResourceTools;
 
 public abstract class LagmarkerMode {
 
@@ -47,6 +53,7 @@ public abstract class LagmarkerMode {
 		processVideoStream();
 		
 		lprofile.dumpFrameBeginnings(outputFolder.resolve("beginFrames"));
+		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + ".lprofile"));
 
 		long runtimeMS = (System.currentTimeMillis() - startTimeMS);
 		dumpRunStats(outputFolder.resolve(outputPrefix + "_runstats.csv"), runtimeMS);
@@ -57,8 +64,6 @@ public abstract class LagmarkerMode {
 	public abstract LagmarkerModeType getModeType();
 
 	protected abstract VStreamWorker getWorker();
-	
-	protected abstract void setupWorker(Lag currLag, VideoFrame currFrame);
 	
 	protected void processVideoStream() {
 		System.out.println("### Searching for workload replay start frame ...");
@@ -105,11 +110,15 @@ public abstract class LagmarkerMode {
 	
 	protected boolean isStartFrame(VideoFrame frame) {
 		// mask out control panel
-		frame.applyMask("STATUS_BAR_MASK_PORTRAIT");
+		frame.frameImg.applyMask("STATUS_BAR_MASK_PORTRAIT");
 
 		// look for completely white frame
-		for (int i = 0; i < frame.dataBuffer.getWidth() * frame.dataBuffer.getHeight() * JRGBFrameBuffer.CHANNEL_NUM; i++) {
-			if(frame.dataBuffer.getRawChannel(i) != 0xFF) return false;
+		for (int i = 0; i < frame.frameImg.dataBuffer.getWidth()
+				* frame.frameImg.dataBuffer.getHeight()
+				* JRGBFrameBuffer.CHANNEL_NUM; i++) {
+			
+			if (frame.frameImg.dataBuffer.getRawChannel(i) != 0xFF)
+				return false;
 		}
 
 		return true;
@@ -121,6 +130,9 @@ public abstract class LagmarkerMode {
 			processFrame(currFrame);
 			currFrame = vstate.decodeNextVideoFrame();
 		}
+		
+		if(getWorker().isActive())
+			getWorker().terminate();
 	}
 	
 	protected void processFrame(VideoFrame currFrame) {
@@ -128,13 +140,14 @@ public abstract class LagmarkerMode {
 			getWorker().update(currFrame);
 		
 		if (isLagBeginFrame(currFrame)) {
-			getWorker().terminate();
+			
+			if(getWorker().isActive())
+				getWorker().terminate();
 
 			Lag newLag = lprofile.addNewLag(currFrame);
 			System.out.println(String.format("\nLAG %d: Beginning found at frame %s.", newLag.lagId, currFrame.toString()));
 			
-			setupWorker(newLag, currFrame);
-			getWorker().start();
+			getWorker().start(newLag, currFrame);
 		}
 	}
 	
@@ -143,6 +156,41 @@ public abstract class LagmarkerMode {
 				- wlStartFrame.startTimeUS, currFrame.endTimeUS - wlStartFrame.startTimeUS);
 	}
 	
-	protected abstract void dumpRunStats(Path outputFileName, long runtimeMS);
+	protected abstract String getSpecificRunStats();
+	
+	protected void dumpRunStats(Path outputFileName, long runtimeMS) {
+		
+		try(BufferedWriter statWriter = Files.newBufferedWriter(outputFileName, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+			
+			statWriter.write("Runtime in MS" + CSVResourceTools.SEPARATOR + runtimeMS);
+			statWriter.newLine();
+			statWriter.write("Output Prefix" + CSVResourceTools.SEPARATOR + outputPrefix);
+			statWriter.newLine();
+			statWriter.write("Output Folder" + CSVResourceTools.SEPARATOR + outputFolder);
+			statWriter.newLine();
+			statWriter.write("lag count" + CSVResourceTools.SEPARATOR + lprofile.lags.size());
+			statWriter.newLine();
+			statWriter.write("start frame" + CSVResourceTools.SEPARATOR + wlStartFrame.videoFrameId);
+			statWriter.newLine();
+			statWriter.write("start frame offset US" + CSVResourceTools.SEPARATOR + wlStartFrame.startTimeUS);
+			statWriter.newLine();
+			statWriter.write("video file" + CSVResourceTools.SEPARATOR + vstate.getVideoFileName());
+			statWriter.newLine();
+			statWriter.write("input file" + CSVResourceTools.SEPARATOR + ieStream.getInputFileName());
+			statWriter.newLine();
+			statWriter.write("run mode" + CSVResourceTools.SEPARATOR + getModeType().toString());
+			statWriter.newLine();
+			statWriter.write("worker config" + CSVResourceTools.SEPARATOR + getWorker().getConfigFile());
+			statWriter.newLine();
+			statWriter.write("worker output" + CSVResourceTools.SEPARATOR + getWorker().getOutputFolder());
+			statWriter.newLine();
+			
+			statWriter.write(getSpecificRunStats());
 
+			System.out.println("Run statistics written to " + outputFileName);
+		} catch (IOException e) {
+			System.out.println("Writing run statistics to file failed!");
+			throw new UncheckedIOException(e);
+		}
+	}
 }

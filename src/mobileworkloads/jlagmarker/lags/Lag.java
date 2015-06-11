@@ -40,6 +40,10 @@ public class Lag {
 		suggIds.add(sugg.videoFrameId);
 	}
 	
+	public List<Integer> getSuggestions() {
+		return suggIds;
+	}
+	
 	public String toCSVEntry() {
 		StringBuilder bld = new StringBuilder();
 		bld.append(lagId).append(CSVResourceTools.SEPARATOR)

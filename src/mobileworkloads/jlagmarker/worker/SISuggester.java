@@ -5,7 +5,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
 import mobileworkloads.jlagmarker.lags.Lag;
-import mobileworkloads.jlagmarker.video.FrameBufferUtils;
+import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
 
@@ -18,29 +18,39 @@ public class SISuggester extends Suggester {
 	
 	protected VideoFrame latestStillFrame; // the latest still frame encountered (the first of a row of consecutive frames which were the same) 
 	
-	protected SuggesterConfParams sconf;	// suggester configuration parameters for the current lag
+	protected final SuggesterConfig sconf;
+	protected SuggesterConfParams sconfParams;	// suggester configuration parameters for the current lag
 	protected Lag currLag;
 			
 	// Still image suggester
-	public SISuggester(Path outputFolder) {
-		super(outputFolder);
+	public SISuggester(Path outputFolder, Path sconfFile) {
+		super(outputFolder, sconfFile);
+		
+		try {
+			sconf = new SuggesterConfig(sconfFile);
+			System.out.println();
+		} catch (IOException e) {
+			throw new UncheckedIOException("Error parsing suggester configuration file [" + sconfFile + "]", e);
+		}
 	}
 	
 	@Override
-	public void setupSuggester(Lag currLag, SuggesterConfParams sconf, VideoFrame currFrame) {
+	public void start(Lag currLag, VideoFrame currFrame) {
+		super.start(currLag, currFrame);
+		
 		firstChangeFound = false;
 		stillFrameCount = 0;
 		latestStillFrame = currFrame;
 		
 		this.currLag = currLag;
-		this.sconf = sconf;
-		System.out.println("LAG " + currLag.lagId + ": Suggester params " + sconf);
+		this.sconfParams = (SuggesterConfParams) sconf.getParams(currLag.lagId);
+		System.out.println("LAG " + currLag.lagId + ": Suggester params " + sconfParams);
 	}
 	
 	@Override
 	public void update(VideoFrame currentFrame) {
 
-		boolean framesEqual = compareFrames(currentFrame, latestStillFrame, sconf.mask, sconf.maxDiffThreshold, sconf.pixIgnore);
+		boolean framesEqual = compareFrames(currentFrame, latestStillFrame, sconfParams.mask, sconfParams.maxDiffThreshold, sconfParams.pixIgnore);
 
 		if (!firstChangeFound) {
 			// current image differs from previous one --> found first change
@@ -56,13 +66,10 @@ public class SISuggester extends Suggester {
 
 			stillFrameCount++;
 
-			if (stillFrameCount >= sconf.stillFrames) {
+			if (stillFrameCount >= sconfParams.stillFrames) {
 				// we found a still period with a valid length
 				// save suggestion image and reset suggester
-				
-				saveSuggestion(currLag, latestStillFrame.clone(), sconf.mask);
-				// save_sugg(siParams->lentry->lagId, siParams->stillStartId,
-				// 			 siParams->rgbBuff_ref, siParams->mask);
+				saveSuggestion(currLag, latestStillFrame.clone(), sconfParams.mask);
 
 				firstChangeFound = false;
 			}
@@ -76,9 +83,9 @@ public class SISuggester extends Suggester {
 	protected void saveSuggestion(Lag lag, VideoFrame suggFrame, String mask) {
 		lag.addSuggestion(suggFrame);
  		
-		if(mask != null) suggFrame.applyMask(mask);
+		if(mask != null) suggFrame.frameImg.applyMask(mask);
 		try {
-			suggFrame.dataBuffer.writeToFile(outputFolder.resolve(String
+			suggFrame.frameImg.dataBuffer.writeToFile(outputFolder.resolve(String
 					.format(FILE_NAME_SUGGESTION_FORMAT, lag.lagId,	suggFrame.videoFrameId)));
 		} catch (IOException e) {
 			throw new UncheckedIOException("Error saving latest suggestion to file!", e);
@@ -88,6 +95,6 @@ public class SISuggester extends Suggester {
 	protected boolean compareFrames(VideoFrame frame0, VideoFrame frame1, String mask, int threshold, int maxPixelIgnore) {
 
 		if(frame0.equals(frame1)) return true;
-		else return FrameBufferUtils.cmpRGBBuff(frame0, frame1, mask, threshold, maxPixelIgnore);
+		else return RGBImgUtils.cmpRGBImg(frame0.frameImg, frame1.frameImg, mask, threshold, maxPixelIgnore);
 	}	
 }

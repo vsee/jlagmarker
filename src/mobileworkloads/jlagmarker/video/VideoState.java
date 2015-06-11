@@ -86,7 +86,7 @@ public class VideoState {
 						"Converting current video frame to RGB buffer failed.");
 	
 			setCurrFrame(new VideoFrame(nativeVideoTimeNS / 1000, timePerFrameNS / 1000,
-					nativeCurrFrameId, buff));
+					nativeCurrFrameId, new RGBImage(buff)));
 	
 			return getCurrFrame().clone();
 			

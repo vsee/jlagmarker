@@ -9,10 +9,10 @@ import java.nio.file.Paths;
 
 import mobileworkloads.jlagmarker.args.LagMarkerArgs;
 import mobileworkloads.jlagmarker.lags.LagProfile;
+import mobileworkloads.jlagmarker.markermodes.DetectorMode;
 import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
 import mobileworkloads.jlagmarker.markermodes.SuggesterMode;
 import mobileworkloads.jlagmarker.masking.MaskManager;
-import mobileworkloads.jlagmarker.worker.SuggesterConfig;
 
 public class JLagmarkerMain {
 		
@@ -44,25 +44,17 @@ public class JLagmarkerMain {
 		} catch (IOException e) {
 			throw new UncheckedIOException("Error parsing input data file [" + args.inputData + "]", e);
 		}
-		
-		SuggesterConfig sconf = null;
-		try {
-			sconf = new SuggesterConfig(args.sconfFile);
-			System.out.println();
-		} catch (IOException e) {
-			throw new UncheckedIOException("Error parsing suggester configuration file [" + args.sconfFile + "]", e);
-		}
-		
+			
 		LagProfile lprofile = new LagProfile();
 		
 		switch(args.modeType) {
-			case SUGGESTER:
+			case SUGGESTER:			
 				mode = new SuggesterMode(args.videoFile.toString(), args.inputFlashOffsetNS, 
-						ieStream, sconf, lprofile, args.outputPrefix, args.outputFolder);
+						ieStream, args.sconfFile, lprofile, args.outputPrefix, args.outputFolder);
 				break;
 			case DETECTOR:
-				// TODO implement DetectorMode
-				// mode = new DetectorMode(videoName);
+				mode = new DetectorMode(args.videoFile.toString(), args.inputFlashOffsetNS, 
+						ieStream, args.dconfFile, args.suggImgs, lprofile, args.outputPrefix, args.outputFolder);
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown run mode: " + args.modeType.name());

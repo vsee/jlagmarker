@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
-import mobileworkloads.jlagmarker.video.VideoFrame;
+import mobileworkloads.jlagmarker.video.RGBImage;
 
 public class MaskManager {
 
@@ -103,12 +103,12 @@ public class MaskManager {
 	}
 	
 	
-	public boolean maskFrame(VideoFrame frame, String maskName) {
+	public boolean maskImage(RGBImage img, String maskName) {
 		ImgMask mask = availableMasks.get(maskName);
 		if(mask == null) return false;
 		
 		for(Rectangle rect : mask.sections) {
-			colourRectRGBBuff(frame.dataBuffer, rect, 0xFF);
+			colourRectRGBBuff(img.dataBuffer, rect, 0xFF);
 		}
 		
 		return true;

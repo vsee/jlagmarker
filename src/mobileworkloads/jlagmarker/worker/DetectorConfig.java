@@ -10,13 +10,17 @@ public class DetectorConfig extends WorkerConfig {
 	
 	public class DetectorConfParams implements WorkerConfParams {
 
-		public int suggestionId;  // the frame id of the suggested image we are looking for 
+		public int suggestionId;  // the frame id of the suggested image we are looking for
+		public int maxDiffThreshold;
+		public int pixIgnore;
 		public String mask;		  // the mask we need to use while looking for the image
 		public int occurrence;	  // specifies how often the suggested image is to be found before it is accepted as valid
 		
 		@Override
 		public String toString() {
 			return new StringBuilder("[").append(suggestionId)
+					.append(", ").append(maxDiffThreshold)
+					.append(", ").append(pixIgnore)
 					.append(", ").append(mask)
 					.append(", ").append(occurrence)
 					.append("]").toString();
@@ -24,7 +28,7 @@ public class DetectorConfig extends WorkerConfig {
 
 	}
 	
-	protected static final int HEAD_LENGTH = 5;
+	protected static final int HEAD_LENGTH = 6;
 	
 	public DetectorConfig(Path configFile) throws IOException {
 		super(configFile);
@@ -47,16 +51,22 @@ public class DetectorConfig extends WorkerConfig {
 				
 		DetectorConfParams dcparams = new DetectorConfParams();
 		
-		dcparams.suggestionId = Integer.parseInt(record.get(1)); // this item has no default value
+		dcparams.suggestionId = record.get(1).equals("SKIP") ? -1 : Integer.parseInt(record.get(1));
 		
-		if(record.get(2).equals(DEFAULT_MARKER)) {
+		dcparams.maxDiffThreshold = record.get(2).equals(DEFAULT_MARKER) ? ((DetectorConfParams) defaultConfParams).maxDiffThreshold
+				: Integer.parseInt(record.get(2));
+		
+		dcparams.pixIgnore = record.get(3).equals(DEFAULT_MARKER) ? ((DetectorConfParams) defaultConfParams).pixIgnore
+				: Integer.parseInt(record.get(3));
+		
+		if(record.get(4).equals(DEFAULT_MARKER)) {
 			dcparams.mask = ((DetectorConfParams) defaultConfParams).mask;		
 		} else {
-			dcparams.mask = record.get(2).equals(NO_MASK_MARKER) ? null : record.get(4);
+			dcparams.mask = record.get(4).equals(NO_MASK_MARKER) ? null : record.get(4);
 		}
 		
-		dcparams.occurrence = record.get(3).equals(DEFAULT_MARKER) ? ((DetectorConfParams) defaultConfParams).occurrence
-				: Integer.parseInt(record.get(3));
+		dcparams.occurrence = record.get(5).equals(DEFAULT_MARKER) ? ((DetectorConfParams) defaultConfParams).occurrence
+				: Integer.parseInt(record.get(5));
 		
 		return dcparams;
 	}

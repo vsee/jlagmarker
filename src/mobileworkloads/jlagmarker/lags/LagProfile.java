@@ -62,7 +62,7 @@ public class LagProfile {
 		
 		for(Lag l : lags) {
 			try {
-				l.startFrame.dataBuffer.writeToFile(outputFolder.resolve(String
+				l.startFrame.frameImg.dataBuffer.writeToFile(outputFolder.resolve(String
 						.format(FILE_NAME_BEGIN_FORMAT, l.lagId,l.startFrame.videoFrameId)));
 			} catch (IOException e) {
 				throw new UncheckedIOException("Error creating begin image for lag: " + l.lagId, e);
