@@ -18,7 +18,6 @@ public class DetectorConfig extends WorkerConfig {
 		public int maxDiffThreshold;
 		public int pixIgnore;
 		public String mask;		  // the mask we need to use while looking for the image
-		public int occurrence;	  // specifies how often the suggested image is to be found before it is accepted as valid
 		
 		@Override
 		public String toString() {
@@ -26,7 +25,6 @@ public class DetectorConfig extends WorkerConfig {
 					.append(", ").append(maxDiffThreshold)
 					.append(", ").append(pixIgnore)
 					.append(", ").append(mask)
-					.append(", ").append(occurrence)
 					.append("]").toString();
 		}
 		
@@ -38,7 +36,6 @@ public class DetectorConfig extends WorkerConfig {
 			res[2] = "" + maxDiffThreshold;
 			res[3] = "" + pixIgnore;
 			res[4] = mask == null ? MaskManager.NO_MASK_MARKER : mask;
-			res[5] = "" + occurrence;
 			return res;
 		}
 
@@ -50,12 +47,11 @@ public class DetectorConfig extends WorkerConfig {
 			dp.maxDiffThreshold = maxDiffThreshold;
 			dp.pixIgnore = pixIgnore;
 			dp.mask = mask;
-			dp.occurrence = occurrence;
 			return dp;
 		}
 	}
 	
-	protected static final int HEAD_LENGTH = 6;
+	protected static final int HEAD_LENGTH = 5;
 	
 	public DetectorConfig(Path configFile) throws IOException {
 		super(configFile);
@@ -73,7 +69,6 @@ public class DetectorConfig extends WorkerConfig {
 		defaultP.maxDiffThreshold = 30;
 		defaultP.pixIgnore = 0;
 		defaultP.mask = null;
-		defaultP.occurrence = 1;
 		defaultConfParams = defaultP;
 	}
 
@@ -116,9 +111,6 @@ public class DetectorConfig extends WorkerConfig {
 			dcparams.mask = record.get(4).equals(MaskManager.NO_MASK_MARKER) ? null : record.get(4);
 		}
 		
-		dcparams.occurrence = record.get(5).equals(DEFAULT_MARKER) ? ((DetectorConfParams) defaultConfParams).occurrence
-				: Integer.parseInt(record.get(5));
-		
 		return dcparams;
 	}
 
@@ -129,7 +121,6 @@ public class DetectorConfig extends WorkerConfig {
 		dp.maxDiffThreshold = sp.maxDiffThreshold;
 		dp.pixIgnore = sp.pixIgnore;
 		dp.mask = sp.mask;
-		dp.occurrence = 1; // TODO fix this
 		
 		confParams.add(dp);
 	}

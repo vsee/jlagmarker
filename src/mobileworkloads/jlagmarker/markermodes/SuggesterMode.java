@@ -2,8 +2,6 @@ package mobileworkloads.jlagmarker.markermodes;
 
 import java.nio.file.Path;
 
-import mobileworkloads.jlagmarker.InputEventStream;
-import mobileworkloads.jlagmarker.lags.LagProfile;
 import mobileworkloads.jlagmarker.worker.Suggester;
 import mobileworkloads.jlagmarker.worker.VStreamWorker;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
@@ -12,9 +10,9 @@ public class SuggesterMode extends LagmarkerMode {
 
 	protected final Suggester suggester;
 	
-	public SuggesterMode(String videoName, long inputFlashOffsetNS, InputEventStream ieStream,
-			Path sconfFile, LagProfile lprofile, String outputPrefix, Path outputFolder) {
-		super(videoName, inputFlashOffsetNS, ieStream, lprofile, outputPrefix, outputFolder);
+	public SuggesterMode(String videoName, long inputFlashOffsetNS, Path inputData,
+			Path sconfFile, String outputPrefix, Path outputFolder) {
+		super(videoName, inputFlashOffsetNS, inputData, outputPrefix, outputFolder);
 		
 		suggester = new Suggester(outputFolder.resolve("sisuggestions"), sconfFile);
 	}

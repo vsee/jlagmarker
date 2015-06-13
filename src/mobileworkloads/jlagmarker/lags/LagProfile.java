@@ -9,6 +9,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
+import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 
 public class LagProfile {
@@ -21,13 +22,35 @@ public class LagProfile {
 	
 	public final List<Lag> lags;
 	
-	public LagProfile() {
+	protected Path beginImgOutputFolder;
+	
+	public LagProfile(Path beginImgOutputFolder) {
 		lags = new ArrayList<Lag>();
+		
+		this.beginImgOutputFolder = beginImgOutputFolder; 
+		if(!(Files.exists(beginImgOutputFolder) && Files.isDirectory(beginImgOutputFolder))) {
+			try {
+				Files.createDirectory(beginImgOutputFolder);
+				System.out.println("Frame beginning output directory created: " + beginImgOutputFolder);
+			} catch (IOException e) {
+				throw new UncheckedIOException("Error creating begin image output directory: " + beginImgOutputFolder, e);
+			}
+		}
 	}
 
 	public Lag addNewLag(VideoFrame startFrame) {
 		Lag l = new Lag(nextLagId++, startFrame);
 		lags.add(l);
+		
+		try {
+			l.startImgFile = beginImgOutputFolder.resolve(String
+					.format(FILE_NAME_BEGIN_FORMAT, l.lagId,l.startFrame.videoFrameId));
+			l.startFrame.frameImg.dataBuffer.writeToFile(l.startImgFile);
+			RGBImgUtils.convertImg(l.startImgFile);
+		} catch (IOException e) {
+			throw new UncheckedIOException("Error creating begin image for lag: " + l.lagId, e);
+		}
+		
 		return l;
 	}
 	
@@ -47,29 +70,5 @@ public class LagProfile {
 			System.out.println("Writing lag profile to file failed!");
 			throw new UncheckedIOException(e);
 		}
-	}
-	
-	public void dumpFrameBeginnings(Path outputFolder) {
-		System.out.println("Dumping frame begin images to: " + outputFolder + " ...");
-		
-		if(!(Files.exists(outputFolder) && Files.isDirectory(outputFolder))) {
-			try {
-				Files.createDirectory(outputFolder);
-				System.out.println("Frame beginning output directory created: " + outputFolder);
-			} catch (IOException e) {
-				throw new UncheckedIOException("Error creating begin image output directory: " + outputFolder, e);
-			}
-		}
-		
-		for(Lag l : lags) {
-			try {
-				l.startFrame.frameImg.dataBuffer.writeToFile(outputFolder.resolve(String
-						.format(FILE_NAME_BEGIN_FORMAT, l.lagId,l.startFrame.videoFrameId)));
-			} catch (IOException e) {
-				throw new UncheckedIOException("Error creating begin image for lag: " + l.lagId, e);
-			}
-		}
-		
-		System.out.println(lags.size() + " begin images created successfully.");
 	}
 }

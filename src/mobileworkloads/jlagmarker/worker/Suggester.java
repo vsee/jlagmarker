@@ -75,11 +75,6 @@ public class Suggester extends VStreamWorker {
 		System.out.println("LAG " + currLag.lagId + ": Suggester params " + sconfParams);
 	}
 	
-	// TODO build fix for occurrence problem
-	// different freq configs can cause different results
-	// see dataset01 300000 vs faster the first lag will work with 2 occurrences for slow fprof but not for fast
-	// fix this by not allowing the suggested lag to look like the begin image if no other image was in between
-	
 	@Override
 	public void update(VideoFrame currentFrame) {
 
@@ -114,15 +109,19 @@ public class Suggester extends VStreamWorker {
 	}
 
 	protected void saveSuggestion(Lag lag, VideoFrame suggFrame, String mask) {
-		lag.addSuggestion(suggFrame);
- 		
 		if(mask != null) suggFrame.frameImg.applyMask(mask);
+		
+		Path suggImgFile = null;
 		try {
-			suggFrame.frameImg.dataBuffer.writeToFile(outputFolder.resolve(String
-					.format(FILE_NAME_SUGGESTION_FORMAT, lag.lagId,	suggFrame.videoFrameId)));
+			suggImgFile = outputFolder.resolve(String
+					.format(FILE_NAME_SUGGESTION_FORMAT, lag.lagId,	suggFrame.videoFrameId));
+			suggFrame.frameImg.dataBuffer.writeToFile(suggImgFile);
+			RGBImgUtils.convertImg(suggImgFile);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Error saving latest suggestion to file!", e);
 		}
+		
+		lag.addSuggestion(suggFrame, suggImgFile);
 	}
 
 	protected boolean compareFrames(VideoFrame frame0, VideoFrame frame1, String mask, int threshold, int maxPixelIgnore) {

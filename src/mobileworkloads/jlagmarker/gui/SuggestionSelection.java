@@ -27,10 +27,7 @@ public class SuggestionSelection {
 	private JTextField textField_2;
 	private JTextField textField_3;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
+	public static void displaySuggSelection() {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -42,10 +39,7 @@ public class SuggestionSelection {
 			}
 		});
 	}
-
-	/**
-	 * Create the application.
-	 */
+	
 	public SuggestionSelection() {
 		initialize();
 	}
@@ -182,14 +176,7 @@ public class SuggestionSelection {
 		frmWorkloadMarkup.getContentPane().add(lblImgLabel);
 
 		
-		BufferedImage myPicture = null;
-		try {
-			myPicture = ImageIO.read(new File("./res/bw_frame.jpg.png"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		Image dimg = myPicture.getScaledInstance(lblImgLabel.getWidth(), lblImgLabel.getHeight(), Image.SCALE_SMOOTH);
-		lblImgLabel.setIcon(new ImageIcon(dimg));
+
 
 	}
 }

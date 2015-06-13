@@ -31,13 +31,22 @@ public abstract class LagmarkerMode {
 	protected long inputFlashOffsetNS;
 	protected VideoFrame wlStartFrame;
 	
-	public LagmarkerMode(String videoName, long inputFlashOffsetNS, InputEventStream ieStream,
-			LagProfile lprofile, String outputPrefix, Path outputFolder) {
+	public LagmarkerMode(String videoName, long inputFlashOffsetNS, Path inputData,
+			String outputPrefix, Path outputFolder) {
 		
 		vstate = new VideoState(videoName);
 		this.inputFlashOffsetNS = inputFlashOffsetNS;
-		this.ieStream = ieStream;
-		this.lprofile = lprofile;
+
+		this.lprofile = new LagProfile(outputFolder.resolve("beginFrames"));
+		
+		try {
+			System.out.println("Parsing input file: " + inputData + " ...");
+			ieStream = new InputEventStream(inputData);
+			System.out.println();
+		} catch (IOException e) {
+			throw new UncheckedIOException("Error parsing input data file [" + inputData + "]", e);
+		}
+		
 		this.outputPrefix = outputPrefix;
 		this.outputFolder = outputFolder;
 	}
@@ -54,7 +63,6 @@ public abstract class LagmarkerMode {
 		
 		System.out.println("\nSaving Results ...");
 		
-		lprofile.dumpFrameBeginnings(outputFolder.resolve("beginFrames"));
 		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + ".lprofile"));
 
 		long runtimeMS = (System.currentTimeMillis() - startTimeMS);

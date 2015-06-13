@@ -8,9 +8,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
 
-import mobileworkloads.jlagmarker.InputEventStream;
+import mobileworkloads.jlagmarker.gui.SuggestionViewGenerator;
 import mobileworkloads.jlagmarker.lags.Lag;
-import mobileworkloads.jlagmarker.lags.LagProfile;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.worker.Suggester;
 import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
@@ -18,11 +17,9 @@ import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
 public class InteractiveSuggMode extends SuggesterMode {
 
 	public InteractiveSuggMode(String videoName, long inputFlashOffsetNS,
-			InputEventStream ieStream, Path sconfFile, LagProfile lprofile,
-			String outputPrefix, Path outputFolder) {
+			Path inputData, Path sconfFile,	String outputPrefix, Path outputFolder) {
 		
-		super(videoName, inputFlashOffsetNS, ieStream, sconfFile, lprofile,
-				outputPrefix, outputFolder);
+		super(videoName, inputFlashOffsetNS, inputData, sconfFile, outputPrefix, outputFolder);
 	}
 	
 	Scanner in = new Scanner(System.in);
@@ -103,6 +100,8 @@ public class InteractiveSuggMode extends SuggesterMode {
 	}
 
 	protected boolean acceptSuggestions() {
+		SuggestionViewGenerator.generateSuggestionView(outputFolder.resolve("markup.html"), lprofile);
+		
 		boolean suggAccept = false;
 		while(true) {
 			System.out.print("Accept Suggestions? [Y/n/s(kip)] ");
@@ -129,7 +128,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 		return suggAccept;
 	}
 	
-	protected void selectSuggestion() {
+	protected void selectSuggestion() {		
 		while(true) {
 			
 			List<Integer> suggestionIds = currLag.getSuggestionIds();
@@ -171,6 +170,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 						);
 				try {
 					Files.delete(sugFile);
+					Files.delete(Paths.get(sugFile.toString().replace(".ppm", ".jpg")));
 				} catch (IOException e) {
 					throw new UncheckedIOException("Error deleting suggested image: " + sugFile, e);
 				}

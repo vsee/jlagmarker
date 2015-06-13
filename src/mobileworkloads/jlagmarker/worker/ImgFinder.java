@@ -21,13 +21,12 @@ public class ImgFinder extends VStreamWorker {
 	protected Lag currLag;
 	protected RGBImage refImg; // reference image to find the frame we are looking for
 	protected DetectorConfParams dconfParams;
-	protected int imageFoundCount;
 	
 	protected VideoFrame detectedImgFrame;
 	protected boolean imageDetected;;
 	protected boolean skipLag;
 
-	protected boolean lastImageDiffers;
+	protected boolean changeSinceBegin; // true if the image looked different at least once since the begin frame
 	
 	public ImgFinder(Path outputFolder, Path dconfFile, Path suggImgs) {
 		super(outputFolder, dconfFile);
@@ -45,20 +44,19 @@ public class ImgFinder extends VStreamWorker {
 	@Override
 	public void update(VideoFrame currentFrame) {
 		if(imageDetected || skipLag) return; // image already found or no need to find it
-		
-		// current image is like the image to be found --> success
-		if(RGBImgUtils.cmpRGBImg(currentFrame.frameImg, refImg, 
-				dconfParams.mask, dconfParams.maxDiffThreshold, dconfParams.pixIgnore)) {
 
-			if(lastImageDiffers) imageFoundCount++;
-			if(imageFoundCount >= dconfParams.occurrence) {
-				imageDetected = true;
-			}
-			
-			detectedImgFrame = currentFrame.clone();
-			lastImageDiffers = false;
+		// did the image look different from the lag start image at least once yet?
+		if(!changeSinceBegin) {
+			changeSinceBegin = !RGBImgUtils.cmpRGBImg(currentFrame.frameImg, currLag.startFrame.frameImg,
+					dconfParams.mask, dconfParams.maxDiffThreshold, dconfParams.pixIgnore);
 		} else {
-			lastImageDiffers = true;
+			// current image is like the image to be found --> success
+			if(RGBImgUtils.cmpRGBImg(currentFrame.frameImg, refImg, 
+					dconfParams.mask, dconfParams.maxDiffThreshold, dconfParams.pixIgnore)) {
+				
+				imageDetected = true;
+				detectedImgFrame = currentFrame.clone();
+			}
 		}
 	}
 	
@@ -69,11 +67,10 @@ public class ImgFinder extends VStreamWorker {
 		this.dconfParams = (DetectorConfParams) dconf.getParams(currLag.lagId);
 		this.currLag = currLag;
 		
-		imageFoundCount = 0;
 		detectedImgFrame = null;
 		imageDetected = false;
 		
-		lastImageDiffers = true;
+		changeSinceBegin = false;
 		
 		// do we need to skip the lag?
 		if(dconfParams.suggestionId < 0) {

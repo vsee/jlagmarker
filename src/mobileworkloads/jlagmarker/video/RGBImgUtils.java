@@ -1,5 +1,10 @@
 package mobileworkloads.jlagmarker.video;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,4 +91,43 @@ public final class RGBImgUtils {
 		return imgsEqual;
 	}
 
+    public static String convertImg(Path startImgFile) {
+        StringBuilder out = new StringBuilder();
+        List<String> commands = new ArrayList<String>();
+        commands.add("/bin/sh");
+        commands.add("-c");
+        commands.add("convert -crop '400x720+440+0' " + startImgFile + " "
+				+ startImgFile.toString().replace(".ppm", ".jpg"));
+    
+        for (String cmd : commands) {
+            out.append(cmd + " ");
+        }
+    
+        Process process = null;
+        try {
+            ProcessBuilder pb = new ProcessBuilder(commands);
+            pb.redirectErrorStream(true);
+    
+            process = pb.start();
+    
+            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+    
+            String line = null, previous = null;
+            while ((line = br.readLine()) != null)
+                if (!line.equals(previous)) {
+                    previous = line;
+                    out.append(line).append('\n');
+                }
+
+            process.waitFor();
+            br.close();
+    
+		} catch (IOException e) {
+			throw new UncheckedIOException("Error converting ppm with command: " + commands, e);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    
+        return out.toString();
+    }   
 }
