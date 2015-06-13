@@ -4,7 +4,8 @@ import java.util.LinkedList;
 
 public class VideoState {
 
-	private static final int MAX_HISTORY_DEPTH = 50;
+	private static final int MAX_AUTO_HISTORY_DEPTH = 50;
+	private static final int MAX_RECORDING_DEPTH = 50000;
 
 	private String videoFileName;
 
@@ -23,6 +24,8 @@ public class VideoState {
 
 	private final LinkedList<VideoFrame> frameHistory;
 	private int historyPos; // greater than 0 if we have currently skipped backwards in the video
+	
+	private boolean isRecording;
 
 	public VideoState(String fileName) {
 
@@ -31,6 +34,8 @@ public class VideoState {
 
 		frameHistory = new LinkedList<VideoFrame>();
 		historyPos = 0;
+		
+		isRecording = false;
 
 		if (!lnativeAllocVideoState()) {
 			lnativeFreeVideoState();
@@ -56,8 +61,11 @@ public class VideoState {
 
 	private void setCurrFrame(VideoFrame currFrame) {
 		frameHistory.addFirst(currFrame);
-		if (frameHistory.size() > MAX_HISTORY_DEPTH)
+
+		int maxDepth = isRecording ? MAX_RECORDING_DEPTH : MAX_AUTO_HISTORY_DEPTH;
+		while(frameHistory.size() > maxDepth) {
 			frameHistory.removeLast();
+		}
 	}
 
 	public float getFrameRate() {
@@ -102,7 +110,16 @@ public class VideoState {
 
 	@Override
 	public String toString() {
-		return getCurrFrame().toString();
+		StringBuilder bld = new StringBuilder();
+		
+		bld.append("Current Frame: ").append(getCurrFrame()).append("\n")
+		.append("History Length: ").append(frameHistory.size()).append("\n")
+		.append("History Pointer: ").append(historyPos).append("\n")
+		.append("History Bounds: ").append(frameHistory.getLast().videoFrameId)
+		.append(" --> ").append(frameHistory.getFirst().videoFrameId).append("\n")
+		.append("Is recording: ").append(isRecording);
+		
+		return bld.toString();
 	}
 
 	public VideoFrame extractCurrentFrame() {
@@ -114,6 +131,17 @@ public class VideoState {
 			throw new IllegalArgumentException("Video frame history lookup out of range: " + frameOffset);
 		
 		historyPos = frameOffset;
+	}
+	
+	public void startRecording() {
+		isRecording = true;
+	}
+	
+	public void stopRecording() {
+		isRecording = false;
+		while(frameHistory.size() > MAX_AUTO_HISTORY_DEPTH) {
+			frameHistory.removeLast();
+		}
 	}
 
 	public boolean isEndOfStream() {

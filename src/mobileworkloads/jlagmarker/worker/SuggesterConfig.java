@@ -23,7 +23,13 @@ public class SuggesterConfig extends WorkerConfig {
 					.append(", ").append(mask)
 					.append("]").toString();
 		}
-
+		
+		public void setCopy(SuggesterConfParams params) {
+			maxDiffThreshold = params.maxDiffThreshold;
+			stillFrames = params.stillFrames;
+			pixIgnore = params.pixIgnore;
+			mask = params.mask;
+		}
 	}
 	
 	protected static final int HEAD_LENGTH = 5;

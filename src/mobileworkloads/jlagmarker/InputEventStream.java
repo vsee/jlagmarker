@@ -25,6 +25,10 @@ public class InputEventStream {
 		return inputFileName;
 	}
 	
+	public void resetCache() {
+		latestMovementDPIdxCache = 0;
+	}
+	
 	public boolean didFingerGoDown(long startTimeUS, long endTimeUS) {
 		DPResourceTrace<IntervalDataPoint>.DPsInIntervalRes idpRes = 
 				inputStream.getDPsInInterval(startTimeUS, endTimeUS, latestMovementDPIdxCache);

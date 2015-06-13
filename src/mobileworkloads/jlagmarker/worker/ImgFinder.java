@@ -5,7 +5,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
 import mobileworkloads.jlagmarker.lags.Lag;
-import mobileworkloads.jlagmarker.lags.Lag.LagState;
 import mobileworkloads.jlagmarker.video.RGBImage;
 import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
@@ -99,10 +98,9 @@ public class ImgFinder extends VStreamWorker {
 		
 		if(!imageDetected) {
 			if(skipLag) {
-				currLag.state = LagState.SKIP;
+				currLag.setSkip();
 			} else {
 				System.out.println("Lag " + currLag.lagId + ": Ending not found in maximum search interval.");
-				currLag.state = LagState.NA;
 			}
 		} else {
 			currLag.setEndFrame(detectedImgFrame);

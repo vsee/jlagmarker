@@ -10,8 +10,8 @@ import java.nio.file.Paths;
 import mobileworkloads.jlagmarker.args.LagMarkerArgs;
 import mobileworkloads.jlagmarker.lags.LagProfile;
 import mobileworkloads.jlagmarker.markermodes.DetectorMode;
+import mobileworkloads.jlagmarker.markermodes.InteractiveSuggMode;
 import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
-import mobileworkloads.jlagmarker.markermodes.SuggesterMode;
 import mobileworkloads.jlagmarker.masking.MaskManager;
 
 public class JLagmarkerMain {
@@ -49,7 +49,7 @@ public class JLagmarkerMain {
 		
 		switch(args.modeType) {
 			case SUGGESTER:			
-				mode = new SuggesterMode(args.videoFile.toString(), args.inputFlashOffsetNS, 
+				mode = new InteractiveSuggMode(args.videoFile.toString(), args.inputFlashOffsetNS, 
 						ieStream, args.sconfFile, lprofile, args.outputPrefix, args.outputFolder);
 				break;
 			case DETECTOR:

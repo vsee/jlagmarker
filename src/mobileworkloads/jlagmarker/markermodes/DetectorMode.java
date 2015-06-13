@@ -35,7 +35,7 @@ public class DetectorMode extends LagmarkerMode {
 	protected String getSpecificRunStats() {
 		StringBuilder bld = new StringBuilder();
 		
-		long detectedLags = lprofile.lags.stream().filter(l -> l.state != LagState.NA).count();
+		long detectedLags = lprofile.lags.stream().filter(l -> l.getState() != LagState.NA).count();
 		
 		bld.append("lags detected").append(CSVResourceTools.SEPARATOR).append(detectedLags).append("\n");
 		bld.append("lags not found").append(CSVResourceTools.SEPARATOR).append(lprofile.lags.size() - detectedLags).append("\n");

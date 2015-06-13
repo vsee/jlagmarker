@@ -2,6 +2,8 @@ package mobileworkloads.jlagmarker.lags;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
@@ -17,31 +19,53 @@ public class Lag {
 	public final int lagId;
 	public final VideoFrame startFrame;
 
-	public LagState state;
+	private LagState state;
 	private VideoFrame endFrame;
 	
-	protected final List<Integer> suggIds;
+	protected final List<VideoFrame> suggestions;
 	
 	public Lag(int lagId, VideoFrame startFrame) {
 		this.lagId = lagId;
 		this.startFrame = startFrame;
 		state = LagState.NA;
-		suggIds = new ArrayList<Integer>();
+		suggestions = new ArrayList<VideoFrame>();
 	}
 	
+	public LagState getState() {
+		return state;
+	}
+	
+	public void setSkip() {
+		state = LagState.SKIP;
+	}
+
 	public void setEndFrame(VideoFrame endFrame) {
 		this.endFrame = endFrame;
 		state = LagState.ENDED;
 	}
 	
-	public void addSuggestion(VideoFrame sugg) {
-		System.out.println(String.format("LAG %d: New suggestion found at frame %s!", lagId, sugg.toString()));
+	public void acceptSuggestion(int selectedId) {
+		Optional<VideoFrame> selectedSugg = suggestions.stream()
+				.filter(sug -> sug.videoFrameId == selectedId).findAny();
 		
-		suggIds.add(sugg.videoFrameId);
+		if(selectedSugg.isPresent()) {
+			setEndFrame(selectedSugg.get());
+		} else {
+			throw new IllegalArgumentException("Given id is not among suggested ids: " + selectedId);
+		}
 	}
 	
-	public List<Integer> getSuggestions() {
-		return suggIds;
+	public void addSuggestion(VideoFrame sugg) {
+		System.out.println(String.format("LAG %d: New suggestion found at frame %s!", lagId, sugg.toString()));
+		suggestions.add(sugg);
+	}
+	
+	public List<Integer> getSuggestionIds() {
+		return suggestions.stream().map(sugg -> sugg.videoFrameId).collect(Collectors.toList());
+	}
+	
+	public void clearSuggestion() {
+		suggestions.clear();
 	}
 	
 	public String toCSVEntry() {
@@ -64,9 +88,22 @@ public class Lag {
 		
 		bld.append(CSVResourceTools.SEPARATOR);
 		
-		for(Integer suggId : suggIds) {
+		for(Integer suggId : getSuggestionIds()) {
 			bld.append(suggId).append(" ");
 		}
+		
+		return bld.toString();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder bld = new StringBuilder();
+		
+		bld.append("Id: ").append(lagId).append("\n")
+		.append("Start: ").append(startFrame).append("\n")
+		.append("End: ").append(endFrame).append("\n")
+		.append("End State: ").append(state.name()).append("\n")
+		.append("Suggestions: ").append(suggestions);
 		
 		return bld.toString();
 	}

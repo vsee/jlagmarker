@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 import mobileworkloads.jlagmarker.InputEventStream;
 import mobileworkloads.jlagmarker.lags.LagProfile;
-import mobileworkloads.jlagmarker.worker.SISuggester;
+import mobileworkloads.jlagmarker.worker.Suggester;
 import mobileworkloads.jlagmarker.worker.Suggester;
 import mobileworkloads.jlagmarker.worker.VStreamWorker;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
@@ -17,7 +17,7 @@ public class SuggesterMode extends LagmarkerMode {
 			Path sconfFile, LagProfile lprofile, String outputPrefix, Path outputFolder) {
 		super(videoName, inputFlashOffsetNS, ieStream, lprofile, outputPrefix, outputFolder);
 		
-		suggester = new SISuggester(outputFolder.resolve("sisuggestions"), sconfFile);
+		suggester = new Suggester(outputFolder.resolve("sisuggestions"), sconfFile);
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class SuggesterMode extends LagmarkerMode {
 	protected String getSpecificRunStats() {
 		StringBuilder bld = new StringBuilder();
 		
-		long noSuggestions = lprofile.lags.stream().filter(l -> l.getSuggestions().size() == 0).count();
+		long noSuggestions = lprofile.lags.stream().filter(l -> l.getSuggestionIds().size() == 0).count();
 		
 		bld.append("lags with no suggestions").append(CSVResourceTools.SEPARATOR).append(noSuggestions).append("\n");
 		
