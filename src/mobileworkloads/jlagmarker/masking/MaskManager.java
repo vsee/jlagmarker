@@ -16,6 +16,8 @@ import mobileworkloads.jlagmarker.video.RGBImage;
 
 public class MaskManager {
 
+	// TODO add mask reload to rerun menu
+	
 	protected enum ParsingState { INIT, RECTS, MASKS };
 	protected static final String LABEL_RECTANGLES = "#RECTANGLES";
 	protected static final String LABEL_MASKS = "#MASKS";

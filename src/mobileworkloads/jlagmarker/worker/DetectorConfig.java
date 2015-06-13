@@ -79,7 +79,7 @@ public class DetectorConfig extends WorkerConfig {
 	
 	@Override
 	protected String[] getHeader() {
-		String[] header = { "lagId", "suggId", "diffTh", "pixIgnore", "maskName", "occurrence" };
+		String[] header = { "lagId", "suggId", "diffTh", "pixIgnore", "maskName" };
 		return header;
 	}
 	

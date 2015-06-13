@@ -120,7 +120,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 					int frame1 = Integer.parseInt(frames[1]);
 					
 					String mask = null;
-					if(frames.length == 3)
+					if(frames.length >= 3)
 						mask = frames[2].equals(MaskManager.NO_MASK_MARKER) ? null : frames[2];
 					
 					int fuzz = 5;
