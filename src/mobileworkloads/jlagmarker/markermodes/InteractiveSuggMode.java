@@ -29,6 +29,21 @@ public class InteractiveSuggMode extends SuggesterMode {
 	Lag currLag = null;
 	
 	@Override
+	protected void findLags() {
+		VideoFrame currFrame = vstate.extractCurrentFrame();
+		while(currFrame != null) {
+			processFrame(currFrame);
+			currFrame = vstate.decodeNextVideoFrame();
+		}
+		
+		if(getWorker().isActive()) {
+			getWorker().terminate();
+			acceptSuggestions();
+			vstate.stopRecording();
+		}
+	}
+	
+	@Override
 	protected void processFrame(VideoFrame currFrame) {
 		if(getWorker().isActive())
 			getWorker().update(currFrame);
@@ -41,6 +56,8 @@ public class InteractiveSuggMode extends SuggesterMode {
 
 				// suggestions are accepted: remove recordings from last lag
 				vstate.stopRecording();
+				
+				
 				// start recording of upcoming lag
 				vstate.startRecording();
 				
@@ -86,9 +103,6 @@ public class InteractiveSuggMode extends SuggesterMode {
 	}
 
 	protected boolean acceptSuggestions() {
-		// TODO
-		// remember final suggestion and add it to the detector config
-		
 		boolean suggAccept = false;
 		while(true) {
 			System.out.print("Accept Suggestions? [Y/n/s(kip)] ");
@@ -121,6 +135,9 @@ public class InteractiveSuggMode extends SuggesterMode {
 			List<Integer> suggestionIds = currLag.getSuggestionIds();
 			if(suggestionIds.size() == 1) {
 				currLag.acceptSuggestion(suggestionIds.get(0));
+				break;
+			} else if(suggestionIds.size() == 0) {
+				System.out.println("LAG " + currLag.lagId + ": No suggestions found!");
 				break;
 			}
 			
@@ -160,5 +177,12 @@ public class InteractiveSuggMode extends SuggesterMode {
 			});
 
 		lag.clearSuggestion();
+	}
+	
+	@Override
+	protected void dumpRunStats(Path outputFileName, long runtimeMS) {
+		super.dumpRunStats(outputFileName, runtimeMS);
+		suggester.saveConfigToFile();
+		suggester.generateDetectorConfig(lprofile);
 	}
 }

@@ -39,6 +39,10 @@ public class Lag {
 		state = LagState.SKIP;
 	}
 
+	public VideoFrame getEndFrame() {
+		return endFrame;
+	}
+	
 	public void setEndFrame(VideoFrame endFrame) {
 		this.endFrame = endFrame;
 		state = LagState.ENDED;
@@ -86,11 +90,11 @@ public class Lag {
 				throw new RuntimeException("Unknown lag state: " + state.name());
 		}
 		
-		bld.append(CSVResourceTools.SEPARATOR);
-		
-		for(Integer suggId : getSuggestionIds()) {
-			bld.append(suggId).append(" ");
-		}
+//		bld.append(CSVResourceTools.SEPARATOR);
+//		
+//		for(Integer suggId : getSuggestionIds()) {
+//			bld.append(suggId).append(" ");
+//		}
 		
 		return bld.toString();
 	}
@@ -107,4 +111,5 @@ public class Lag {
 		
 		return bld.toString();
 	}
+
 }

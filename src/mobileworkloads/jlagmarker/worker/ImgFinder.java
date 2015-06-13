@@ -13,7 +13,8 @@ import mobileworkloads.jlagmarker.worker.DetectorConfig.DetectorConfParams;
 public class ImgFinder extends VStreamWorker {
 
 	public static final String FILE_NAME_IMAGE_FOUND_FORMAT = "lag_%03d_found_%d.ppm";
-	
+	public static final String FILE_NAME_DETECTION_CONFIG = "detector_config.csv";
+
 	protected final Path suggImgs;
 	protected final DetectorConfig dconf;
 	
@@ -75,7 +76,7 @@ public class ImgFinder extends VStreamWorker {
 		lastImageDiffers = true;
 		
 		// do we need to skip the lag?
-		if(dconfParams.suggestionId == -1) {
+		if(dconfParams.suggestionId < 0) {
 			System.out.println("Lag " + currLag.lagId + " skipped.");
 			skipLag = true;
 			return;

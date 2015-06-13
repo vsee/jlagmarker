@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import mobileworkloads.jlagmarker.InputEventStream;
 import mobileworkloads.jlagmarker.lags.LagProfile;
 import mobileworkloads.jlagmarker.worker.Suggester;
-import mobileworkloads.jlagmarker.worker.Suggester;
 import mobileworkloads.jlagmarker.worker.VStreamWorker;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
 

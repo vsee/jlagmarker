@@ -20,6 +20,8 @@ public class MaskManager {
 	protected static final String LABEL_RECTANGLES = "#RECTANGLES";
 	protected static final String LABEL_MASKS = "#MASKS";
 	
+	public static final String NO_MASK_MARKER = "NONE";
+	
 	
 	private static MaskManager instance;
 	public static MaskManager getInstance() {

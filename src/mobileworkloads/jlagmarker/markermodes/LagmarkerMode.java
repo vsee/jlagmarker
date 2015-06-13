@@ -52,6 +52,8 @@ public abstract class LagmarkerMode {
 		
 		processVideoStream();
 		
+		System.out.println("\nSaving Results ...");
+		
 		lprofile.dumpFrameBeginnings(outputFolder.resolve("beginFrames"));
 		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + ".lprofile"));
 
@@ -175,6 +177,8 @@ public abstract class LagmarkerMode {
 			statWriter.write("start frame offset US" + CSVResourceTools.SEPARATOR + wlStartFrame.startTimeUS);
 			statWriter.newLine();
 			statWriter.write("video file" + CSVResourceTools.SEPARATOR + vstate.getVideoFileName());
+			statWriter.newLine();
+			statWriter.write("video fps" + CSVResourceTools.SEPARATOR + vstate.getFrameRate());
 			statWriter.newLine();
 			statWriter.write("input file" + CSVResourceTools.SEPARATOR + ieStream.getInputFileName());
 			statWriter.newLine();

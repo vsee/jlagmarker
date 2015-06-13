@@ -4,11 +4,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import mobileworkloads.jlagmarker.masking.MaskManager;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
 
 public class SuggesterConfig extends WorkerConfig {
 
-	public class SuggesterConfParams implements WorkerConfParams {
+	public class SuggesterConfParams extends WorkerConfParams {
 
 		public int maxDiffThreshold;
 		public int stillFrames;
@@ -30,17 +31,60 @@ public class SuggesterConfig extends WorkerConfig {
 			pixIgnore = params.pixIgnore;
 			mask = params.mask;
 		}
+
+		@Override
+		public String[] toCSVArray() {
+			String[] res = new String[HEAD_LENGTH];
+			res[0] = lagId == -1 ? DEFAULT_PARAMS_HEAD : "" + lagId;
+			res[1] = "" + maxDiffThreshold;
+			res[2] = "" + stillFrames;
+			res[3] = "" + pixIgnore;
+			res[4] = mask == null ? MaskManager.NO_MASK_MARKER : mask;
+			return res;
+		}
+
+		@Override
+		public WorkerConfParams clone() {
+			SuggesterConfParams sp = new SuggesterConfParams();
+			sp.lagId = lagId;
+			sp.maxDiffThreshold = maxDiffThreshold;
+			sp.stillFrames = stillFrames;
+			sp.pixIgnore = pixIgnore;
+			sp.mask = mask;
+			return sp;
+		}
 	}
 	
 	protected static final int HEAD_LENGTH = 5;
+
+	public SuggesterConfig() { 
+		super();
+	}
 	
 	public SuggesterConfig(Path configFile) throws IOException {
 		super(configFile);
 	}
 
 	@Override
+	protected void setDefaultParams() {
+		SuggesterConfParams defaultP = new SuggesterConfParams();
+		defaultP.lagId = -1;
+		defaultP.maxDiffThreshold = 30;
+		defaultP.stillFrames = 30;
+		defaultP.pixIgnore = 0;
+		defaultP.mask = null;
+		defaultConfParams = defaultP;
+	}
+	
+	@Override
 	protected int getHeadLength() {
 		return HEAD_LENGTH;
+	}
+	
+	@Override
+	protected String[] getHeader() {
+		String[] header = { "lagId", "diffTh", "stillFrames", "pixIgnore", "maskName" };
+		return header;
 	}
 	
 	@Override
@@ -55,6 +99,8 @@ public class SuggesterConfig extends WorkerConfig {
 				
 		SuggesterConfParams scparams = new SuggesterConfParams();
 		
+		scparams.lagId = record.get(0).equals(DEFAULT_PARAMS_HEAD) ? -1 : Integer.parseInt(record.get(0));
+		
 		scparams.maxDiffThreshold = record.get(1).equals(DEFAULT_MARKER) ? ((SuggesterConfParams) defaultConfParams).maxDiffThreshold
 				: Integer.parseInt(record.get(1));
 		
@@ -67,7 +113,7 @@ public class SuggesterConfig extends WorkerConfig {
 		if(record.get(4).equals(DEFAULT_MARKER)) {
 			scparams.mask = ((SuggesterConfParams) defaultConfParams).mask;		
 		} else {
-			scparams.mask = record.get(4).equals(NO_MASK_MARKER) ? null : record.get(4);
+			scparams.mask = record.get(4).equals(MaskManager.NO_MASK_MARKER) ? null : record.get(4);
 		}
 		
 		return scparams;

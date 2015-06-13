@@ -186,7 +186,6 @@ public class SuggestionSelection {
 		try {
 			myPicture = ImageIO.read(new File("./res/bw_frame.jpg.png"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		Image dimg = myPicture.getScaledInstance(lblImgLabel.getWidth(), lblImgLabel.getHeight(), Image.SCALE_SMOOTH);

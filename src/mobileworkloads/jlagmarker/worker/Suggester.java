@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import mobileworkloads.jlagmarker.lags.Lag;
+import mobileworkloads.jlagmarker.lags.LagProfile;
 import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
@@ -15,6 +16,7 @@ import mobileworkloads.mlgovernor.res.CSVResourceTools;
 public class Suggester extends VStreamWorker {
 	
 	public static final String FILE_NAME_SUGGESTION_FORMAT = "lag_%03d_sug_%d.ppm";
+	public static final String FILE_NAME_SUGGESTION_CONFIG = "suggester_config.csv";
 	
 	// TODO imagemagick comparison
 	
@@ -31,12 +33,17 @@ public class Suggester extends VStreamWorker {
 	// Still image suggester
 	public Suggester(Path outputFolder, Path sconfFile) {
 		super(outputFolder, sconfFile);
-		
-		try {
-			sconf = new SuggesterConfig(sconfFile);
-			System.out.println();
-		} catch (IOException e) {
-			throw new UncheckedIOException("Error parsing suggester configuration file [" + sconfFile + "]", e);
+
+		if(configFile == null) {
+			sconfFile = outputFolder.resolve(FILE_NAME_SUGGESTION_CONFIG);
+			sconf = new SuggesterConfig();
+		} else {
+			try {
+				sconf = new SuggesterConfig(sconfFile);
+				System.out.println();
+			} catch (IOException e) {
+				throw new UncheckedIOException("Error parsing suggester configuration file [" + sconfFile + "]", e);
+			}
 		}
 	}
 	
@@ -122,5 +129,22 @@ public class Suggester extends VStreamWorker {
 
 		if(frame0.equals(frame1)) return true;
 		else return RGBImgUtils.cmpRGBImg(frame0.frameImg, frame1.frameImg, mask, threshold, maxPixelIgnore);
+	}
+
+	public void saveConfigToFile() {
+		Path suggConfFileName = outputFolder.resolve(FILE_NAME_SUGGESTION_CONFIG);
+		sconf.saveToFile(suggConfFileName);
+		System.out.println("Suggester configuration written to " + suggConfFileName);
+	}
+
+	public void generateDetectorConfig(LagProfile lprofile) {
+		Path detectConfFileName = outputFolder.resolve(ImgFinder.FILE_NAME_DETECTION_CONFIG);
+		DetectorConfig dconf = new DetectorConfig();
+		for(Lag l : lprofile.lags) {
+			SuggesterConfParams sp = (SuggesterConfParams) sconf.getParams(l.lagId);
+			dconf.createFromSuggParamsf(l, sp);
+		}
+		dconf.saveToFile(detectConfFileName);
+		System.out.println("Detector configuration written to " + detectConfFileName);
 	}
 }

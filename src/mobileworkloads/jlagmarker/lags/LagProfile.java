@@ -13,7 +13,8 @@ import mobileworkloads.jlagmarker.video.VideoFrame;
 
 public class LagProfile {
 
-	private static final String LAGPROFILE_HEADER = "lagId,startFrame,endFrame,suggestionids";
+//	private static final String LAGPROFILE_HEADER = "lagId,startFrame,endFrame,suggestionids";
+	private static final String LAGPROFILE_HEADER = "lagId,startFrame,endFrame";
 	private static final String FILE_NAME_BEGIN_FORMAT = "lag_%03d_beg_%d.ppm";
 
 	private int nextLagId = 0;
