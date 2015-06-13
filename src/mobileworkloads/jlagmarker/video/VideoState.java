@@ -100,7 +100,7 @@ public class VideoState {
 			
 		} else {
 			historyPos--;
-			return getCurrFrame();
+			return getCurrFrame().clone();
 		}
 	}
 
@@ -131,6 +131,13 @@ public class VideoState {
 			throw new IllegalArgumentException("Video frame history lookup out of range: " + frameOffset);
 		
 		historyPos = frameOffset;
+	}
+	
+	public VideoFrame getFrameFromHistory(int frameOffset) {
+		if (frameOffset < 0 || frameOffset >= frameHistory.size())
+			throw new IllegalArgumentException("Video frame history lookup out of range: " + frameOffset);
+		
+		return frameHistory.get(frameOffset).clone();
 	}
 	
 	public void startRecording() {

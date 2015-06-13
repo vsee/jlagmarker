@@ -29,6 +29,8 @@ public class Suggester extends VStreamWorker {
 	protected SuggesterConfParams sconfParams;	// suggester configuration parameters for the current lag
 	protected Lag currLag;
 	
+	protected boolean dumpAll; // dump all frames you encounter
+	
 
 	// Still image suggester
 	public Suggester(Path outputFolder, Path sconfFile) {
@@ -64,6 +66,14 @@ public class Suggester extends VStreamWorker {
 		return sconfParams;
 	}
 	
+	public void toggleDumpAll() {
+		dumpAll = !dumpAll;
+		System.out.println("Frame dump: " + (dumpAll ? "ACTIVE" : "INACTIVE"));
+	}
+	
+	public void deactivateDumpAll() {
+		dumpAll = false;
+	}
 
 	public void changeSuggesterParams(int lagId, String line) {
 		List<String> paramsList = 
@@ -78,6 +88,11 @@ public class Suggester extends VStreamWorker {
 	@Override
 	public void update(VideoFrame currentFrame) {
 
+		if(dumpAll) {
+			saveSuggestion(currLag, currentFrame.clone(), sconfParams.mask);
+			return;
+		}
+		
 		boolean framesEqual = compareFrames(currentFrame, latestStillFrame, sconfParams.mask, sconfParams.maxDiffThreshold, sconfParams.pixIgnore);
 
 		if (!firstChangeFound) {
@@ -111,17 +126,14 @@ public class Suggester extends VStreamWorker {
 	protected void saveSuggestion(Lag lag, VideoFrame suggFrame, String mask) {
 		if(mask != null) suggFrame.frameImg.applyMask(mask);
 		
-		Path suggImgFile = null;
 		try {
-			suggImgFile = outputFolder.resolve(String
-					.format(FILE_NAME_SUGGESTION_FORMAT, lag.lagId,	suggFrame.videoFrameId));
-			suggFrame.frameImg.dataBuffer.writeToFile(suggImgFile);
-			RGBImgUtils.convertImg(suggImgFile);
+			suggFrame.frameImg.writeToFile(outputFolder.resolve(String
+					.format(FILE_NAME_SUGGESTION_FORMAT, lag.lagId,	suggFrame.videoFrameId)), true);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Error saving latest suggestion to file!", e);
 		}
 		
-		lag.addSuggestion(suggFrame, suggImgFile);
+		lag.addSuggestion(suggFrame);
 	}
 
 	protected boolean compareFrames(VideoFrame frame0, VideoFrame frame1, String mask, int threshold, int maxPixelIgnore) {

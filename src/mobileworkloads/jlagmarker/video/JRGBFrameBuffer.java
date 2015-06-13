@@ -61,7 +61,7 @@ public class JRGBFrameBuffer implements Cloneable {
 		buffer[idx] = (byte) value;
 	}
 	
-	public void writeToFile(Path filename) throws IOException {
+	protected void writeToFile(Path filename) throws IOException {
 		FileOutputStream out = new FileOutputStream(filename.toString());
 		out.write(("P6\n" + getWidth() + " " + getHeight() + "\n255\n").getBytes()); // write header
 		out.write(buffer);
@@ -119,7 +119,7 @@ public class JRGBFrameBuffer implements Cloneable {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			System.err.println("Error: image in " + filename + " too big");
 		}
-	}
+   	}
 	
 	public JRGBFrameBuffer clone() {
 		JRGBFrameBuffer dest = new JRGBFrameBuffer();

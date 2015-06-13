@@ -91,13 +91,13 @@ public final class RGBImgUtils {
 		return imgsEqual;
 	}
 
-    public static String convertImg(Path startImgFile) {
+	
+	private static String runCmd(String command) {
         StringBuilder out = new StringBuilder();
         List<String> commands = new ArrayList<String>();
         commands.add("/bin/sh");
         commands.add("-c");
-        commands.add("convert -crop '400x720+440+0' " + startImgFile + " "
-				+ startImgFile.toString().replace(".ppm", ".jpg"));
+        commands.add(command);
     
         for (String cmd : commands) {
             out.append(cmd + " ");
@@ -129,5 +129,27 @@ public final class RGBImgUtils {
 		}
     
         return out.toString();
-    }   
+	}
+	
+    public static String convertImg(Path startImgFile) {
+    	return runCmd("convert -crop '400x720+440+0' " + startImgFile + " "
+				+ startImgFile.toString().replace(".ppm", ".jpg"));
+    }
+
+	public static String generateDiffImage(Path outputFolder, String mask, 
+			RGBImage frameImg0, RGBImage frameImg1) throws IOException {
+		
+		if(mask != null) {
+			frameImg0.applyMask(mask);
+			frameImg1.applyMask(mask);
+		}
+		frameImg0.writeToFile(outputFolder.resolve("img0.ppm"), false);
+		frameImg1.writeToFile(outputFolder.resolve("img1.ppm"), false);
+		
+		return runCmd("compare -metric AE -fuzz 3% " 
+        		+ outputFolder.resolve("img0.ppm") + " "
+				+ outputFolder.resolve("img1.ppm") + " "
+				+ outputFolder.resolve("cmp.ppm"));
+	}   
 }
+

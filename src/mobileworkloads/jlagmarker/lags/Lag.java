@@ -11,16 +11,6 @@ import mobileworkloads.mlgovernor.res.CSVResourceTools;
 
 public class Lag {
 
-	private class SuggestionEntry {
-		VideoFrame frame;
-		Path imgFile;
-		
-		@Override
-		public String toString() {
-			return frame.toString();
-		}
-	}
-	
 	public enum LagState {
 		ENDED, 	// lag ending is set 
 		SKIP,  	// lag needs to be skipped
@@ -29,18 +19,17 @@ public class Lag {
 	
 	public final int lagId;
 	public final VideoFrame startFrame;
-	public Path startImgFile;
 
 	private LagState state;
 	private VideoFrame endFrame;
 	
-	protected final List<SuggestionEntry> suggestions;
+	protected final List<VideoFrame> suggestions;
 	
 	public Lag(int lagId, VideoFrame startFrame) {
 		this.lagId = lagId;
 		this.startFrame = startFrame;
 		state = LagState.NA;
-		suggestions = new ArrayList<SuggestionEntry>();
+		suggestions = new ArrayList<VideoFrame>();
 	}
 	
 	public LagState getState() {
@@ -61,7 +50,7 @@ public class Lag {
 	}
 	
 	public void acceptSuggestion(int selectedId) {
-		Optional<VideoFrame> selectedSugg = suggestions.stream().map(sugEntry -> sugEntry.frame)
+		Optional<VideoFrame> selectedSugg = suggestions.stream()
 				.filter(sug -> sug.videoFrameId == selectedId).findAny();
 		
 		if(selectedSugg.isPresent()) {
@@ -71,22 +60,17 @@ public class Lag {
 		}
 	}
 	
-	public void addSuggestion(VideoFrame sugg, Path suggImgFile) {
+	public void addSuggestion(VideoFrame sugg) {
 		System.out.println(String.format("LAG %d: New suggestion found at frame %s!", lagId, sugg.toString()));
-		
-		SuggestionEntry se = new SuggestionEntry();
-		se.frame = sugg;
-		se.imgFile = suggImgFile;
-		
-		suggestions.add(se);
+		suggestions.add(sugg);
 	}
 	
 	public List<Integer> getSuggestionIds() {
-		return suggestions.stream().map(sugg -> sugg.frame.videoFrameId).collect(Collectors.toList());
+		return suggestions.stream().map(sugg -> sugg.videoFrameId).collect(Collectors.toList());
 	}
 	
 	public List<Path> getSuggestionFiles() {
-		return suggestions.stream().map(sugg -> sugg.imgFile).collect(Collectors.toList());
+		return suggestions.stream().map(sugg -> sugg.frameImg.getFileLocation()).collect(Collectors.toList());
 	}
 	
 	public void clearSuggestion() {

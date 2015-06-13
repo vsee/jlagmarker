@@ -106,8 +106,8 @@ public class ImgFinder extends VStreamWorker {
 			
 			if(dconfParams.mask != null) detectedImgFrame.frameImg.applyMask(dconfParams.mask);
 			try {
-				detectedImgFrame.frameImg.dataBuffer.writeToFile(outputFolder.resolve(String
-						.format(FILE_NAME_IMAGE_FOUND_FORMAT, currLag.lagId, detectedImgFrame.videoFrameId)));
+				detectedImgFrame.frameImg.writeToFile(outputFolder.resolve(String
+						.format(FILE_NAME_IMAGE_FOUND_FORMAT, currLag.lagId, detectedImgFrame.videoFrameId)), false);
 			} catch (IOException e) {
 				throw new UncheckedIOException("Error saving detected image to file!", e);
 			}

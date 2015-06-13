@@ -9,7 +9,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 
 public class LagProfile {
@@ -43,10 +42,8 @@ public class LagProfile {
 		lags.add(l);
 		
 		try {
-			l.startImgFile = beginImgOutputFolder.resolve(String
-					.format(FILE_NAME_BEGIN_FORMAT, l.lagId,l.startFrame.videoFrameId));
-			l.startFrame.frameImg.dataBuffer.writeToFile(l.startImgFile);
-			RGBImgUtils.convertImg(l.startImgFile);
+			l.startFrame.frameImg.writeToFile(beginImgOutputFolder.resolve(String
+					.format(FILE_NAME_BEGIN_FORMAT, l.lagId,l.startFrame.videoFrameId)), true);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Error creating begin image for lag: " + l.lagId, e);
 		}

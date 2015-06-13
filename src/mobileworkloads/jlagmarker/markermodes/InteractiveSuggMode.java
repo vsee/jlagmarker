@@ -10,20 +10,23 @@ import java.util.Scanner;
 
 import mobileworkloads.jlagmarker.gui.SuggestionViewGenerator;
 import mobileworkloads.jlagmarker.lags.Lag;
+import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.worker.Suggester;
 import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
 
 public class InteractiveSuggMode extends SuggesterMode {
 
+	protected Scanner in;
+	protected Lag currLag = null;
+	
 	public InteractiveSuggMode(String videoName, long inputFlashOffsetNS,
 			Path inputData, Path sconfFile,	String outputPrefix, Path outputFolder) {
 		
 		super(videoName, inputFlashOffsetNS, inputData, sconfFile, outputPrefix, outputFolder);
+		
+		in = new Scanner(System.in);
 	}
-	
-	Scanner in = new Scanner(System.in);
-	Lag currLag = null;
 	
 	@Override
 	protected void findLags() {
@@ -35,7 +38,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 		
 		if(getWorker().isActive()) {
 			getWorker().terminate();
-			acceptSuggestions();
+			acceptSuggestions(currFrame);
 			vstate.stopRecording();
 		}
 	}
@@ -47,7 +50,9 @@ public class InteractiveSuggMode extends SuggesterMode {
 		
 		if (isLagBeginFrame(currFrame)) {
 			
-			if(currLag == null || acceptSuggestions()) {
+			suggester.deactivateDumpAll();
+			
+			if(currLag == null || acceptSuggestions(currFrame)) {
 				if(getWorker().isActive())
 					getWorker().terminate();
 
@@ -75,8 +80,60 @@ public class InteractiveSuggMode extends SuggesterMode {
 		
 		removeSuggestions(currLag);
 		
-		System.out.println("\nLAG " + currLag.lagId + ": Rerunning suggester.");
-		changeSuggParameters();
+		System.out.println("\nLAG " + currLag.lagId + ": Prepare Suggester Rerun:");
+		System.out.println("1. Change Suggestion Parameters.");
+		System.out.println("2. Toggle Frame Dump.");
+		System.out.println("3. Rerun Suggestion.");
+		while(true) {
+			System.out.print("Action [default 3]: ");
+			String line = in.nextLine();
+			
+			if(line.isEmpty() || line.equals("3")) {
+				break; // accept default params
+			} else if(line.equals("1")) {
+				changeSuggParameters();
+			} else if(line.equals("2")) {
+				suggester.toggleDumpAll();
+			} else {
+				System.out.println("Invalid input: " + line);
+			}
+		}
+	}
+
+	protected void createDiffImage(VideoFrame currFrame) {
+		while(true) {
+			System.out.print("Select frames to diff or leave empty to cancel: ");
+			String line = in.nextLine();
+
+			if(line.isEmpty()) {
+				break; // cancel diff image creation
+			} else {
+				String[] frames = line.split(" ");
+				if(frames.length < 2 || frames.length > 3) {
+					System.out.println("Invalid input: " + line);
+					continue;
+				}
+				
+				try {
+					int frame0 = Integer.parseInt(frames[0]);
+					int frame1 = Integer.parseInt(frames[1]);
+					
+					String mask = null;
+					if(frames.length == 3) mask = frames[2];
+						
+					
+					String res = RGBImgUtils.generateDiffImage(outputFolder, mask,
+							vstate.getFrameFromHistory(currFrame.videoFrameId - frame0).frameImg, 
+							vstate.getFrameFromHistory(currFrame.videoFrameId - frame1).frameImg);
+					System.out.println(res);
+				} catch (IllegalArgumentException e) {
+					System.out.println("Invalid input: " + line);
+				} catch (IOException e) {
+					System.out.println("Error writing diff image to file.");
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	protected void changeSuggParameters() {
@@ -99,36 +156,42 @@ public class InteractiveSuggMode extends SuggesterMode {
 		}
 	}
 
-	protected boolean acceptSuggestions() {
+	protected boolean acceptSuggestions(VideoFrame currFrame) {
 		SuggestionViewGenerator.generateSuggestionView(outputFolder.resolve("markup.html"), lprofile);
 		
+		System.out.println("Suggester finished: ");
+		System.out.println("1. Accept Suggestions.");
+		System.out.println("2. Rerun Suggester.");
+		System.out.println("3. Skip Lag.");
+		System.out.println("4. Run Image Diff.");
 		boolean suggAccept = false;
 		while(true) {
-			System.out.print("Accept Suggestions? [Y/n/s(kip)] ");
+
+			System.out.print("Pick an action [default 1]: ");
 			String line = in.nextLine();
 			
-			if(line.isEmpty() || line.equalsIgnoreCase("y")) {
+			if (line.isEmpty() || line.equalsIgnoreCase("1")) {
 				selectSuggestion();
 				suggAccept = true;
 				break;
-			} else if(line.equalsIgnoreCase("s")) {
+			} else if (line.equalsIgnoreCase("2")) {
+				break;
+			} else if (line.equals("3")) {
 				System.out.println("Skipping lag.");
 				currLag.setSkip();
 				suggAccept = true;
 				break;
-			} else {
-				if(line.equalsIgnoreCase("n")) {
-					break;
-				} else {
-					System.out.println("Invalid input: " + line);
-				}
+			} else if (line.equalsIgnoreCase("4")) {
+				createDiffImage(currFrame);
+			}  else {
+				System.out.println("Invalid input: " + line);
 			}
 		}
 		
 		return suggAccept;
 	}
 	
-	protected void selectSuggestion() {		
+	protected void selectSuggestion() {
 		while(true) {
 			
 			List<Integer> suggestionIds = currLag.getSuggestionIds();

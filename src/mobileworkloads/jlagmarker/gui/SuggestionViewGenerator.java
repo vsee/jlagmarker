@@ -77,7 +77,7 @@ public class SuggestionViewGenerator {
 				statWriter.write("<tr>");
 				statWriter.newLine();
 				statWriter.write("<td><img id=\"beg-"+ l.lagId +"\" src=\"" + 
-						l.startImgFile.toString().replace(".ppm", ".jpg") + "\" width=\"200\"/></td>");
+						l.startFrame.frameImg.getFileLocation().toString().replace(".ppm", ".jpg") + "\" width=\"200\"/></td>");
 				statWriter.newLine();
 				
 				for (int i = 0; i < suggIds.size(); i++) {

@@ -19,9 +19,9 @@ public class SuggesterConfig extends WorkerConfig {
 		@Override
 		public String toString() {
 			return new StringBuilder("[").append(maxDiffThreshold)
-					.append(", ").append(stillFrames)
-					.append(", ").append(pixIgnore)
-					.append(", ").append(mask)
+					.append(",").append(stillFrames)
+					.append(",").append(pixIgnore)
+					.append(",").append(mask == null ? MaskManager.NO_MASK_MARKER : mask)
 					.append("]").toString();
 		}
 		
