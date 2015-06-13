@@ -19,6 +19,11 @@ public class Suggester extends VStreamWorker {
 	public static final String FILE_NAME_SUGGESTION_CONFIG = "suggester_config.csv";
 	
 	// TODO imagemagick comparison
+	// add cmp method [FUZZY, MAXMETRIC] to suggester and detector conf
+	// add fuzz factor to suggester and detector conf
+	// provide selection for both in menu 
+	
+	// TODO add verbose mode to show diff output
 	
 	protected boolean firstChangeFound;	// wait until a first change was found
 	protected int stillFrameCount;	  	// look for a still period of at least x frames
@@ -140,6 +145,15 @@ public class Suggester extends VStreamWorker {
 
 		if(frame0.equals(frame1)) return true;
 		else return RGBImgUtils.cmpRGBImg(frame0.frameImg, frame1.frameImg, mask, threshold, maxPixelIgnore);
+//		try {
+//			String[] res = RGBImgUtils.generateDiffImage(outputFolder, mask, frame0.frameImg.clone(), frame1.frameImg.clone(), 5).trim().split(" ");
+//			Integer diff = Integer.parseInt(res[res.length - 1]);
+//			System.out.println("Diff: " + frame0.videoFrameId + " -- " + frame1.videoFrameId + ": " + diff);
+//			return diff == 0;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		return false;
 	}
 
 	public void saveConfigToFile() {

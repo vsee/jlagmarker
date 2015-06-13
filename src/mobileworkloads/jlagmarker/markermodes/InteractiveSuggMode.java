@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 import mobileworkloads.jlagmarker.gui.SuggestionViewGenerator;
 import mobileworkloads.jlagmarker.lags.Lag;
+import mobileworkloads.jlagmarker.masking.MaskManager;
 import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.worker.Suggester;
@@ -109,7 +110,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 				break; // cancel diff image creation
 			} else {
 				String[] frames = line.split(" ");
-				if(frames.length < 2 || frames.length > 3) {
+				if(frames.length < 2 || frames.length > 4) {
 					System.out.println("Invalid input: " + line);
 					continue;
 				}
@@ -119,13 +120,18 @@ public class InteractiveSuggMode extends SuggesterMode {
 					int frame1 = Integer.parseInt(frames[1]);
 					
 					String mask = null;
-					if(frames.length == 3) mask = frames[2];
-						
+					if(frames.length == 3)
+						mask = frames[2].equals(MaskManager.NO_MASK_MARKER) ? null : frames[2];
 					
-					String res = RGBImgUtils.generateDiffImage(outputFolder, mask,
+					int fuzz = 5;
+					if(frames.length == 4) fuzz = Integer.parseInt(frames[3]);
+					
+					String[] res = RGBImgUtils.generateDiffImage(outputFolder, mask, 
 							vstate.getFrameFromHistory(currFrame.videoFrameId - frame0).frameImg, 
-							vstate.getFrameFromHistory(currFrame.videoFrameId - frame1).frameImg);
-					System.out.println(res);
+							vstate.getFrameFromHistory(currFrame.videoFrameId - frame1).frameImg,
+							fuzz).trim().split(" ");
+					Integer diff = Integer.parseInt(res[res.length - 1]);
+					System.out.println("Diff: " + frame0 + " -- " + frame1 + ": " + diff);
 				} catch (IllegalArgumentException e) {
 					System.out.println("Invalid input: " + line);
 				} catch (IOException e) {

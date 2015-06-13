@@ -137,7 +137,11 @@ public final class RGBImgUtils {
     }
 
 	public static String generateDiffImage(Path outputFolder, String mask, 
-			RGBImage frameImg0, RGBImage frameImg1) throws IOException {
+			RGBImage frameImg0, RGBImage frameImg1, int fuzz) throws IOException {
+		
+		if(fuzz < 0 || fuzz > 100) {
+			throw new IllegalArgumentException("Fuzz factor out of valid range: " + fuzz);
+		}
 		
 		if(mask != null) {
 			frameImg0.applyMask(mask);
@@ -146,7 +150,7 @@ public final class RGBImgUtils {
 		frameImg0.writeToFile(outputFolder.resolve("img0.ppm"), false);
 		frameImg1.writeToFile(outputFolder.resolve("img1.ppm"), false);
 		
-		return runCmd("compare -metric AE -fuzz 3% " 
+		return runCmd("compare -metric AE -fuzz " + fuzz + "% " 
         		+ outputFolder.resolve("img0.ppm") + " "
 				+ outputFolder.resolve("img1.ppm") + " "
 				+ outputFolder.resolve("cmp.ppm"));
