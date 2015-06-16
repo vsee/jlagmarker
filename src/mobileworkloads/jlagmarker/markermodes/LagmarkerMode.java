@@ -11,6 +11,8 @@ import java.util.Calendar;
 import mobileworkloads.jlagmarker.InputEventStream;
 import mobileworkloads.jlagmarker.lags.Lag;
 import mobileworkloads.jlagmarker.lags.LagProfile;
+import mobileworkloads.jlagmarker.masking.ImgMask;
+import mobileworkloads.jlagmarker.masking.MaskManager;
 import mobileworkloads.jlagmarker.video.JRGBFrameBuffer;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.video.VideoState;
@@ -20,6 +22,8 @@ import mobileworkloads.mlgovernor.res.CSVResourceTools;
 public abstract class LagmarkerMode {
 
 	public enum LagmarkerModeType { SUGGESTER, DETECTOR }
+
+	private static final String CONTROL_PANEL_MASK_NAME = "STATUS_BAR_MASK_PORTRAIT";
 	
 	protected final VideoState vstate;
 	protected final InputEventStream ieStream;
@@ -30,6 +34,8 @@ public abstract class LagmarkerMode {
 	
 	protected long inputFlashOffsetNS;
 	protected VideoFrame wlStartFrame;
+	
+	protected final ImgMask whiteFrameMask;
 	
 	public LagmarkerMode(String videoName, long inputFlashOffsetNS, Path inputData,
 			String outputPrefix, Path outputFolder) {
@@ -49,6 +55,8 @@ public abstract class LagmarkerMode {
 		
 		this.outputPrefix = outputPrefix;
 		this.outputFolder = outputFolder;
+		
+		whiteFrameMask = MaskManager.getInstance().getMask(CONTROL_PANEL_MASK_NAME);
 	}
 	
 	public void run() {
@@ -120,7 +128,9 @@ public abstract class LagmarkerMode {
 	
 	protected boolean isStartFrame(VideoFrame frame) {
 		// mask out control panel
-		frame.frameImg.applyMask("STATUS_BAR_MASK_PORTRAIT");
+		if(!frame.frameImg.applyMask(whiteFrameMask)) {
+			throw new RuntimeException("Error applying mask to find white start frame.");
+		}
 
 		// look for completely white frame
 		for (int i = 0; i < frame.frameImg.dataBuffer.getWidth()

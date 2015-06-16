@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 import mobileworkloads.jlagmarker.gui.SuggestionViewGenerator;
 import mobileworkloads.jlagmarker.lags.Lag;
+import mobileworkloads.jlagmarker.masking.ImgMask;
 import mobileworkloads.jlagmarker.masking.MaskManager;
 import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
@@ -74,31 +75,34 @@ public class InteractiveSuggMode extends SuggesterMode {
 		}
 	}
 
-	protected void prepareSuggRerun(VideoFrame currFrame) {
+	protected void prepareSuggRerun(VideoFrame currFrame) {		
+		System.out.println("\nLAG " + currLag.lagId + ": Prepare Suggester Rerun:");
+		System.out.println("1. Change Suggestion Parameters.");
+		System.out.println("2. Toggle Frame Dump.");
+		System.out.println("3. Reload mask config.");
+		System.out.println("4. Rerun Suggestion.");
+		while(true) {
+			System.out.print("Action [default 4]: ");
+			String line = in.nextLine();
+
+			if (line.equals("1")) {
+				changeSuggParameters();
+			} else if (line.equals("2")) {
+				suggester.toggleDumpAll();
+			}  else if (line.equals("3")) {
+				MaskManager.getInstance().reloadMasks();
+			} else if (line.equals("4") || line.isEmpty()) {
+				break; // accept default params
+			} else {
+				System.out.println("Invalid input: " + line);
+			}
+		}
+		
 		// rewind video to one after the begin frame of the current lag
 		vstate.skipBackwards(currFrame.videoFrameId - currLag.startFrame.videoFrameId - 1);
 		ieStream.resetCache(); // TODO improve this by setting input back to input idx of corresponding begin frame
 		
 		removeSuggestions(currLag);
-		
-		System.out.println("\nLAG " + currLag.lagId + ": Prepare Suggester Rerun:");
-		System.out.println("1. Change Suggestion Parameters.");
-		System.out.println("2. Toggle Frame Dump.");
-		System.out.println("3. Rerun Suggestion.");
-		while(true) {
-			System.out.print("Action [default 3]: ");
-			String line = in.nextLine();
-			
-			if(line.isEmpty() || line.equals("3")) {
-				break; // accept default params
-			} else if(line.equals("1")) {
-				changeSuggParameters();
-			} else if(line.equals("2")) {
-				suggester.toggleDumpAll();
-			} else {
-				System.out.println("Invalid input: " + line);
-			}
-		}
 	}
 
 	protected void createDiffImage(VideoFrame currFrame) {
@@ -119,9 +123,11 @@ public class InteractiveSuggMode extends SuggesterMode {
 					int frame0 = Integer.parseInt(frames[0]);
 					int frame1 = Integer.parseInt(frames[1]);
 					
-					String mask = null;
-					if(frames.length >= 3)
-						mask = frames[2].equals(MaskManager.NO_MASK_MARKER) ? null : frames[2];
+					ImgMask mask = null;
+					if(frames.length >= 3) {
+						mask = frames[2].equals(MaskManager.NO_MASK_MARKER) ? 
+								null : MaskManager.getInstance().getMask(frames[2]);
+					}
 					
 					int fuzz = 5;
 					if(frames.length == 4) fuzz = Integer.parseInt(frames[3]);

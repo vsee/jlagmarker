@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import mobileworkloads.jlagmarker.masking.ImgMask;
+
 public final class RGBImgUtils {
 	
 	private RGBImgUtils() { }
@@ -45,20 +47,20 @@ public final class RGBImgUtils {
 	public static boolean cmpRGBImg(RGBImage img0,
 			RGBImage img1, int threshold, int maxPixelIgnore) {
 
-		return cmpRGBImg(img0, img1, new ArrayList<String>(), threshold, maxPixelIgnore);
+		return cmpRGBImg(img0, img1, new ArrayList<ImgMask>(), threshold, maxPixelIgnore);
 	}
 
 	public static boolean cmpRGBImg(RGBImage img0,
-			RGBImage img1, String mask, int threshold, int maxPixelIgnore) {
+			RGBImage img1, ImgMask mask, int threshold, int maxPixelIgnore) {
 		
-		List<String> masks = new ArrayList<String>();
+		List<ImgMask> masks = new ArrayList<ImgMask>();
 		if(mask != null) masks.add(mask);
 
 		return cmpRGBImg(img0, img1, masks, threshold, maxPixelIgnore);
 	}
 
 	public static boolean cmpRGBImg(RGBImage img0,
-			RGBImage img1, List<String> masks, int threshold, int maxPixelIgnore) {
+			RGBImage img1, List<ImgMask> masks, int threshold, int maxPixelIgnore) {
 		
 		if ((img0 == null && img1 != null) || (img0 != null && img1 == null))
 			return false; // if one of the buffers is null and the other is not
@@ -79,7 +81,6 @@ public final class RGBImgUtils {
 			if(!masks.isEmpty()) {
 				maskedImg0.applyMask(masks.get(currentMask));
 				maskedImg1.applyMask(masks.get(currentMask));
-
 			}
 			
 			imgsEqual = maxMetricDiff(maskedImg0, maskedImg1, threshold, maxPixelIgnore);
@@ -136,7 +137,7 @@ public final class RGBImgUtils {
 				+ startImgFile.toString().replace(".ppm", ".jpg"));
     }
 
-	public static String generateDiffImage(Path outputFolder, String mask, 
+	public static String generateDiffImage(Path outputFolder, ImgMask mask, 
 			RGBImage frameImg0, RGBImage frameImg1, int fuzz) throws IOException {
 		
 		if(fuzz < 0 || fuzz > 100) {

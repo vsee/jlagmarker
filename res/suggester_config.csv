@@ -1,6 +1,6 @@
 lagId,diffTh,stillFrames,pixIgnore,maskName
 DEFAULT,30,15,0,CLOCK_MASK
-0,%D%,%D%,%D%,NONE
+0,%D%,%D%,%D%,NO_MASK
 1,%D%,%D%,%D%,RUNTIME_WLM_MASK_PORTRAIT
 2,%D%,%D%,%D%,%D%
 3,%D%,%D%,%D%,%D%

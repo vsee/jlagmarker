@@ -64,7 +64,7 @@ public abstract class WorkerConfig {
 	
 	protected void parseConfig(Path configFile) throws IOException {
 		if(configFile == null || !Files.isRegularFile(configFile))
-			throw new IllegalArgumentException("Given worker configuration file invalid: " + configFile);
+			throw new IOException("Given worker configuration file invalid: " + configFile);
 
 		System.out.println("Parsing worker configuration: " + configFile + " ...");
 		

@@ -8,6 +8,7 @@ import java.util.List;
 
 import mobileworkloads.jlagmarker.lags.Lag;
 import mobileworkloads.jlagmarker.lags.LagProfile;
+import mobileworkloads.jlagmarker.masking.ImgMask;
 import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
 import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
@@ -128,7 +129,7 @@ public class Suggester extends VStreamWorker {
 		}
 	}
 
-	protected void saveSuggestion(Lag lag, VideoFrame suggFrame, String mask) {
+	protected void saveSuggestion(Lag lag, VideoFrame suggFrame, ImgMask mask) {
 		if(mask != null) suggFrame.frameImg.applyMask(mask);
 		
 		try {
@@ -141,7 +142,7 @@ public class Suggester extends VStreamWorker {
 		lag.addSuggestion(suggFrame);
 	}
 
-	protected boolean compareFrames(VideoFrame frame0, VideoFrame frame1, String mask, int threshold, int maxPixelIgnore) {
+	protected boolean compareFrames(VideoFrame frame0, VideoFrame frame1, ImgMask mask, int threshold, int maxPixelIgnore) {
 
 		if(frame0.equals(frame1)) return true;
 		else return RGBImgUtils.cmpRGBImg(frame0.frameImg, frame1.frameImg, mask, threshold, maxPixelIgnore);

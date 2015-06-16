@@ -70,7 +70,7 @@ public class JRGBFrameBuffer implements Cloneable {
 	
 	protected void readFromFile(Path filename) throws IOException {
 		if(filename == null || !Files.isRegularFile(filename))
-			throw new IllegalArgumentException("Given image buffer file invalid: " + filename);
+			throw new IOException("Given image buffer file invalid: " + filename);
 		
         String line;
         StringTokenizer st;

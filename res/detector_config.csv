@@ -1,6 +1,6 @@
 lagId,suggId,diffTh,pixIgnore,maskName,occurrence
 DEFAULT,SKIP,30,0,CLOCK_MASK,1
-0,545,%D%,%D%,NONE,2
+0,545,%D%,%D%,NO_MASK,2
 1,614,%D%,%D%,RUNTIME_WLM_MASK_PORTRAIT,%D%
 2,750,%D%,%D%,%D%,%D%
 3,946,%D%,%D%,%D%,%D%

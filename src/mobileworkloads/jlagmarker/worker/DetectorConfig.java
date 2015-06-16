@@ -6,6 +6,7 @@ import java.util.List;
 
 import mobileworkloads.jlagmarker.lags.Lag;
 import mobileworkloads.jlagmarker.lags.Lag.LagState;
+import mobileworkloads.jlagmarker.masking.ImgMask;
 import mobileworkloads.jlagmarker.masking.MaskManager;
 import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
@@ -17,14 +18,14 @@ public class DetectorConfig extends WorkerConfig {
 		public int suggestionId;  // the frame id of the suggested image we are looking for
 		public int maxDiffThreshold;
 		public int pixIgnore;
-		public String mask;		  // the mask we need to use while looking for the image
+		public ImgMask mask;		  // the mask we need to use while looking for the image
 		
 		@Override
 		public String toString() {
 			return new StringBuilder("[").append(suggestionId)
 					.append(",").append(maxDiffThreshold)
 					.append(",").append(pixIgnore)
-					.append(",").append(mask == null ? MaskManager.NO_MASK_MARKER : mask)
+					.append(",").append(mask == null ? MaskManager.NO_MASK_MARKER : mask.maskName)
 					.append("]").toString();
 		}
 		
@@ -35,7 +36,7 @@ public class DetectorConfig extends WorkerConfig {
 			res[1] = "" + (suggestionId < 0 ? "SKIP" : suggestionId);
 			res[2] = "" + maxDiffThreshold;
 			res[3] = "" + pixIgnore;
-			res[4] = mask == null ? MaskManager.NO_MASK_MARKER : mask;
+			res[4] = mask == null ? MaskManager.NO_MASK_MARKER : mask.maskName;
 			return res;
 		}
 
@@ -108,7 +109,8 @@ public class DetectorConfig extends WorkerConfig {
 		if(record.get(4).equals(DEFAULT_MARKER)) {
 			dcparams.mask = ((DetectorConfParams) defaultConfParams).mask;		
 		} else {
-			dcparams.mask = record.get(4).equals(MaskManager.NO_MASK_MARKER) ? null : record.get(4);
+			dcparams.mask = record.get(4).equals(MaskManager.NO_MASK_MARKER) ? null : 
+				MaskManager.getInstance().getMask(record.get(4));
 		}
 		
 		return dcparams;

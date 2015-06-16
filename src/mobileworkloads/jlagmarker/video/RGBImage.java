@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import mobileworkloads.jlagmarker.masking.ImgMask;
 import mobileworkloads.jlagmarker.masking.MaskManager;
 
 public class RGBImage {
@@ -29,11 +30,13 @@ public class RGBImage {
 		return fileLocation;
 	}
 
-	public void applyMask(String maskName) {
-		if(MaskManager.getInstance().maskImage(this, maskName)) {
-			appliedMasks.add(maskName);
+	public boolean applyMask(ImgMask mask) {
+		if(MaskManager.getInstance().maskImage(this, mask)) {
+			appliedMasks.add(mask.maskName);
+			return true;
 		} else {
-			throw new IllegalArgumentException("Failed to apply mask to image: " + maskName);
+			System.err.println("ERROR: Failed to apply mask to image: " + mask);
+			return false;
 		}
 	}
 	

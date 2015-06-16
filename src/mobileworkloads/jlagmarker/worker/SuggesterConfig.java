@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import mobileworkloads.jlagmarker.masking.ImgMask;
 import mobileworkloads.jlagmarker.masking.MaskManager;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
 
@@ -14,14 +15,14 @@ public class SuggesterConfig extends WorkerConfig {
 		public int maxDiffThreshold;
 		public int stillFrames;
 		public int pixIgnore;
-		public String mask;
+		public ImgMask mask;
 		
 		@Override
 		public String toString() {
 			return new StringBuilder("[").append(maxDiffThreshold)
 					.append(",").append(stillFrames)
 					.append(",").append(pixIgnore)
-					.append(",").append(mask == null ? MaskManager.NO_MASK_MARKER : mask)
+					.append(",").append(mask == null ? MaskManager.NO_MASK_MARKER : mask.maskName)
 					.append("]").toString();
 		}
 		
@@ -39,7 +40,7 @@ public class SuggesterConfig extends WorkerConfig {
 			res[1] = "" + maxDiffThreshold;
 			res[2] = "" + stillFrames;
 			res[3] = "" + pixIgnore;
-			res[4] = mask == null ? MaskManager.NO_MASK_MARKER : mask;
+			res[4] = mask == null ? MaskManager.NO_MASK_MARKER : mask.maskName;
 			return res;
 		}
 
@@ -113,7 +114,8 @@ public class SuggesterConfig extends WorkerConfig {
 		if(record.get(4).equals(DEFAULT_MARKER)) {
 			scparams.mask = ((SuggesterConfParams) defaultConfParams).mask;		
 		} else {
-			scparams.mask = record.get(4).equals(MaskManager.NO_MASK_MARKER) ? null : record.get(4);
+			scparams.mask = record.get(4).equals(MaskManager.NO_MASK_MARKER) ? null : 
+				MaskManager.getInstance().getMask(record.get(4));
 		}
 		
 		return scparams;
