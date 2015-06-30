@@ -1,5 +1,6 @@
 package mobileworkloads.jlagmarker.args;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -20,7 +21,7 @@ public class LagMarkerArgs {
 			
 			"\n" +
 			"-video file - Path to the video file to be processed\n" +
-			"-ioffset num - Offset between white flash and input start in nano seconds\n" +
+			"-ifoffset num - Offset between white flash and input start in nano seconds\n" +
 			"-input file - Path to the movement input file to be processed\n" +
 			"-masks file - Path to the mask configuration file to be used\n" +
 			
@@ -53,7 +54,7 @@ public class LagMarkerArgs {
 		
 		
 		System.out.println("VIDEO: " + videoFile);
-		System.out.println("IOFFSET: " + inputFlashOffsetNS);
+		System.out.println("IFOFFSET: " + inputFlashOffsetNS);
 		System.out.println("INPUT: " + inputData);
 		System.out.println("MASKS: " + maskSpec);
 
@@ -63,7 +64,8 @@ public class LagMarkerArgs {
 		System.out.println("MODE: " + modeType.name());
 		switch(modeType) {
 			case SUGGESTER:
-				System.out.println("SUGGESTER CONFIG: " + (sconfFile == null ? "GENERATE" : sconfFile));
+				System.out.println("SUGGESTER CONFIG: " + 
+						(sconfFile == null || !Files.exists(sconfFile) ? "GENERATE" : sconfFile));
 				break;
 			case DETECTOR:
 				System.out.println("DETECTOR CONFIG: " + dconfFile);
@@ -83,7 +85,7 @@ public class LagMarkerArgs {
 		if(optionString.isEmpty()) throw new IllegalArgumentException("No valid video path specified.");
 		videoFile = Paths.get(optionString);
 		
-		optionString = Utils.getOption("ioffset", args);
+		optionString = Utils.getOption("ifoffset", args);
 		if(optionString.isEmpty()) throw new IllegalArgumentException("No valid input offset specified.");
 		inputFlashOffsetNS = Long.parseLong(optionString);
 		
@@ -114,7 +116,7 @@ public class LagMarkerArgs {
 			if(optionString.isEmpty()) {
 				sconfFile = null;
 			} else {
-				sconfFile = Paths.get(optionString);				
+				sconfFile = Paths.get(optionString);
 			}
 			break;
 		case DETECTOR:

@@ -57,9 +57,11 @@ public class InteractiveSuggMode extends SuggesterMode {
 			if(currLag == null || acceptSuggestions(currFrame)) {
 				if(getWorker().isActive())
 					getWorker().terminate();
-
+				
 				// suggestions are accepted: remove recordings from last lag
 				vstate.stopRecording();
+				// save intermediate configuration file
+				suggester.saveConfigToFile();
 				
 				
 				// start recording of upcoming lag
@@ -78,20 +80,23 @@ public class InteractiveSuggMode extends SuggesterMode {
 	protected void prepareSuggRerun(VideoFrame currFrame) {		
 		System.out.println("\nLAG " + currLag.lagId + ": Prepare Suggester Rerun:");
 		System.out.println("1. Change Suggestion Parameters.");
-		System.out.println("2. Toggle Frame Dump.");
-		System.out.println("3. Reload mask config.");
-		System.out.println("4. Rerun Suggestion.");
+		System.out.println("2. Change Default Suggestion Parameters.");
+		System.out.println("3. Toggle Frame Dump.");
+		System.out.println("4. Reload mask config.");
+		System.out.println("5. Rerun Suggestion.");
 		while(true) {
-			System.out.print("Action [default 4]: ");
+			System.out.print("Action [default 5]: ");
 			String line = in.nextLine();
 
 			if (line.equals("1")) {
-				changeSuggParameters();
+				changeSuggParameters(false);
 			} else if (line.equals("2")) {
+				changeSuggParameters(true);
+			} else if (line.equals("3")) {
 				suggester.toggleDumpAll();
-			}  else if (line.equals("3")) {
+			}  else if (line.equals("4")) {
 				MaskManager.getInstance().reloadMasks();
-			} else if (line.equals("4") || line.isEmpty()) {
+			} else if (line.equals("5") || line.isEmpty()) {
 				break; // accept default params
 			} else {
 				System.out.println("Invalid input: " + line);
@@ -148,7 +153,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 		}
 	}
 
-	protected void changeSuggParameters() {
+	protected void changeSuggParameters(boolean defaultParams) {
 		SuggesterConfParams params = suggester.getSuggesterParams();
 		
 		while(true) {
@@ -159,7 +164,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 				break; // accept default params
 			} else {
 				try {
-					suggester.changeSuggesterParams(currLag.lagId, line);
+					suggester.changeSuggesterParams(currLag.lagId, line, defaultParams);
 					break;
 				} catch (IllegalArgumentException e) {
 					System.out.println("Invalid input: " + line);

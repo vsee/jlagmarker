@@ -63,14 +63,14 @@ public class DetectorConfig extends WorkerConfig {
 	}
 	
 	@Override
-	protected void setDefaultParams() {
+	protected WorkerConfParams getInitialDefaultParams() {
 		DetectorConfParams defaultP = new DetectorConfParams();
 		defaultP.lagId = -1;
 		defaultP.suggestionId = -1;
 		defaultP.maxDiffThreshold = 30;
 		defaultP.pixIgnore = 0;
 		defaultP.mask = null;
-		defaultConfParams = defaultP;
+		return defaultP;
 	}
 
 	@Override

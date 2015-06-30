@@ -15,7 +15,7 @@ public class DetectorMode extends LagmarkerMode {
 			Path dconfFile, Path suggImgs, String outputPrefix, Path outputFolder) {
 		super(videoName, inputFlashOffsetNS, inputData, outputPrefix, outputFolder);
 		
-		imgfinder = new ImgFinder(outputFolder.resolve("detections"), dconfFile, suggImgs);
+		imgfinder = new ImgFinder(outputFolder, dconfFile, suggImgs);
 	}
 
 	@Override

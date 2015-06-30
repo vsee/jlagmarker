@@ -67,14 +67,14 @@ public class SuggesterConfig extends WorkerConfig {
 	}
 
 	@Override
-	protected void setDefaultParams() {
+	protected WorkerConfParams getInitialDefaultParams() {
 		SuggesterConfParams defaultP = new SuggesterConfParams();
 		defaultP.lagId = -1;
 		defaultP.maxDiffThreshold = 30;
 		defaultP.stillFrames = 30;
 		defaultP.pixIgnore = 0;
 		defaultP.mask = null;
-		defaultConfParams = defaultP;
+		return defaultP;
 	}
 	
 	@Override

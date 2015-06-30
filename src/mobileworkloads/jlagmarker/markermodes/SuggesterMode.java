@@ -14,7 +14,7 @@ public class SuggesterMode extends LagmarkerMode {
 			Path sconfFile, String outputPrefix, Path outputFolder) {
 		super(videoName, inputFlashOffsetNS, inputData, outputPrefix, outputFolder);
 		
-		suggester = new Suggester(outputFolder.resolve("sisuggestions"), sconfFile);
+		suggester = new Suggester(outputFolder, sconfFile);
 	}
 
 	@Override

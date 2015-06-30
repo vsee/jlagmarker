@@ -5,6 +5,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
 import mobileworkloads.jlagmarker.lags.Lag;
+import mobileworkloads.jlagmarker.masking.MaskManager;
 import mobileworkloads.jlagmarker.video.RGBImage;
 import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
@@ -29,7 +30,7 @@ public class ImgFinder extends VStreamWorker {
 	protected boolean changeSinceBegin; // true if the image looked different at least once since the begin frame
 	
 	public ImgFinder(Path outputFolder, Path dconfFile, Path suggImgs) {
-		super(outputFolder, dconfFile);
+		super(outputFolder.resolve("detections"), dconfFile);
 		
 		this.suggImgs = suggImgs;
 		
@@ -102,7 +103,9 @@ public class ImgFinder extends VStreamWorker {
 			}
 		} else {
 			currLag.setEndFrame(detectedImgFrame);
-			System.out.println("Lag " + currLag.lagId + ": Found at " + detectedImgFrame.videoFrameId + " with mask " + dconfParams.mask + ".");
+			System.out.println("Lag " + currLag.lagId + ": Found at "
+					+ detectedImgFrame.videoFrameId + " with mask "
+					+ (dconfParams.mask == null ? MaskManager.NO_MASK_MARKER : dconfParams.mask) + ".");
 			
 			if(dconfParams.mask != null) detectedImgFrame.frameImg.applyMask(dconfParams.mask);
 			try {

@@ -2,6 +2,7 @@ package mobileworkloads.jlagmarker.worker;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -40,10 +41,10 @@ public class Suggester extends VStreamWorker {
 
 	// Still image suggester
 	public Suggester(Path outputFolder, Path sconfFile) {
-		super(outputFolder, sconfFile);
-
-		if(configFile == null) {
-			sconfFile = outputFolder.resolve(FILE_NAME_SUGGESTION_CONFIG);
+		super(outputFolder.resolve("suggestions"), sconfFile);
+		configFile = this.outputFolder.resolve(FILE_NAME_SUGGESTION_CONFIG);
+		
+		if(configFile == null || !Files.exists(configFile)) {
 			sconf = new SuggesterConfig();
 		} else {
 			try {
@@ -81,12 +82,14 @@ public class Suggester extends VStreamWorker {
 		dumpAll = false;
 	}
 
-	public void changeSuggesterParams(int lagId, String line) {
+	public void changeSuggesterParams(int lagId, String line, boolean defaultParams) {
 		List<String> paramsList = 
 				Arrays.asList((lagId + CSVResourceTools.SEPARATOR + line).split(CSVResourceTools.SEPARATOR));
 		
 		SuggesterConfParams params = (SuggesterConfParams) sconf.parseParams(paramsList);
-		sconfParams.setCopy(params);
+		
+		if(defaultParams) sconf.setDefaultParams(params);
+		else sconfParams.setCopy(params);
 		
 		System.out.println("LAG " + currLag.lagId + ": Suggester params " + sconfParams);
 	}
@@ -158,9 +161,8 @@ public class Suggester extends VStreamWorker {
 	}
 
 	public void saveConfigToFile() {
-		Path suggConfFileName = outputFolder.resolve(FILE_NAME_SUGGESTION_CONFIG);
-		sconf.saveToFile(suggConfFileName);
-		System.out.println("Suggester configuration written to " + suggConfFileName);
+		sconf.saveToFile(configFile);
+		System.out.println("Suggester configuration written to " + configFile);
 	}
 
 	public void generateDetectorConfig(LagProfile lprofile) {

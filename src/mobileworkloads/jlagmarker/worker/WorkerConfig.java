@@ -35,9 +35,9 @@ public abstract class WorkerConfig {
 		confParams = new ArrayList<WorkerConfParams>();
 		generateConfig = true;
 		currLagId = 0;
-		setDefaultParams();
+		setDefaultParams(getInitialDefaultParams());
 	}
-	
+
 	public WorkerConfig(Path configFile) throws IOException {
 		confParams = new ArrayList<WorkerConfParams>();
 		generateConfig = false;
@@ -60,7 +60,12 @@ public abstract class WorkerConfig {
 	
 	protected abstract String[] getHeader();
 	
-	protected abstract void setDefaultParams();
+	protected abstract WorkerConfParams getInitialDefaultParams();
+	
+	public void setDefaultParams(WorkerConfParams params) {
+		params.lagId = -1;
+		defaultConfParams = params;
+	}
 	
 	protected void parseConfig(Path configFile) throws IOException {
 		if(configFile == null || !Files.isRegularFile(configFile))
@@ -94,6 +99,14 @@ public abstract class WorkerConfig {
 	protected abstract WorkerConfParams parseParams(List<String> record);
 	
 	protected void saveToFile(Path outputFile) {
+		if(Files.exists(outputFile)) {
+			try {
+				Files.delete(outputFile);
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+	
 		try(OutputStreamWriter outWriter = new OutputStreamWriter(
 				Files.newOutputStream(outputFile, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE))) {
 			CSVResourceTools.writeRawHeader(outWriter, getHeader());

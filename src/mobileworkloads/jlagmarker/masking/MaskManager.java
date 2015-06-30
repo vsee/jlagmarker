@@ -45,6 +45,10 @@ public class MaskManager {
 	}
 	
 	public boolean reloadMasks() {
+		// TODO fix the problem with reloading masks that have been changed
+		// it can happen that a reference to the changed mask still exists in a config parameter
+		// this one is then not reloaded
+		
 		if(loadedMasksFile == null) {
 			System.out.println("Unable to reload masks since no mask file is currently loaded.");
 			return false;
