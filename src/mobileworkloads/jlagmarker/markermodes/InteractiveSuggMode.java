@@ -21,6 +21,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 
 	protected Scanner in;
 	protected Lag currLag = null;
+	protected boolean frameProcessingFinished;
 	
 	public InteractiveSuggMode(String videoName, long inputFlashOffsetNS,
 			Path inputData, Path sconfFile,	String outputPrefix, Path outputFolder) {
@@ -28,29 +29,25 @@ public class InteractiveSuggMode extends SuggesterMode {
 		super(videoName, inputFlashOffsetNS, inputData, sconfFile, outputPrefix, outputFolder);
 		
 		in = new Scanner(System.in);
+		frameProcessingFinished = false;
 	}
 	
 	@Override
 	protected void findLags() {
 		VideoFrame currFrame = vstate.extractCurrentFrame();
-		while(currFrame != null) {
+		
+		while(!frameProcessingFinished) {
 			processFrame(currFrame);
 			currFrame = vstate.decodeNextVideoFrame();
-		}
-		
-		if(getWorker().isActive()) {
-			getWorker().terminate();
-			acceptSuggestions(currFrame);
-			vstate.stopRecording();
 		}
 	}
 	
 	@Override
 	protected void processFrame(VideoFrame currFrame) {
-		if(getWorker().isActive())
+		if(getWorker().isActive() && !vstate.isEndOfStream())
 			getWorker().update(currFrame);
 		
-		if (isLagBeginFrame(currFrame)) {
+		if (vstate.isEndOfStream() || isLagBeginFrame(currFrame)) {
 			
 			suggester.deactivateDumpAll();
 			
@@ -63,6 +60,10 @@ public class InteractiveSuggMode extends SuggesterMode {
 				// save intermediate configuration file
 				suggester.saveConfigToFile();
 				
+				if(vstate.isEndOfStream()) {
+					frameProcessingFinished = true;
+					return;
+				}
 				
 				// start recording of upcoming lag
 				vstate.startRecording();

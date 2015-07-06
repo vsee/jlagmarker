@@ -23,20 +23,19 @@ public final class RGBImgUtils {
 		
 		for(int y = 0; y < img0.dataBuffer.getHeight(); y++) {
 			for(int x = 0; x < img0.dataBuffer.getWidth(); x++) {
-				for(int channel = 0; channel < JRGBFrameBuffer.CHANNEL_NUM; channel++) {
-					boolean pixelDiffers = false;
-					
-					for (int channelIdx = 0; channelIdx < JRGBFrameBuffer.CHANNEL_NUM; channelIdx++) {
-						int d0 = img0.dataBuffer.getChannel(x, y, channel);
-						int d1 = img1.dataBuffer.getChannel(x, y, channel);
-						int dist = Math.abs(d1 - d0);
-						pixelDiffers |= dist > threshold;
-					}
-					
-					if(pixelDiffers) {
-						ignoredPixels++;
-						if(ignoredPixels > maxPixelIgnore) return false;
-					}
+				boolean pixelDiffers = false;
+
+				for (int channelIdx = 0; channelIdx < JRGBFrameBuffer.CHANNEL_NUM; channelIdx++) {
+					int d0 = img0.dataBuffer.getChannel(x, y, channelIdx);
+					int d1 = img1.dataBuffer.getChannel(x, y, channelIdx);
+					int dist = Math.abs(d1 - d0);
+					pixelDiffers |= dist > threshold;
+				}
+
+				if (pixelDiffers) {
+					ignoredPixels++;
+					if (ignoredPixels > maxPixelIgnore)
+						return false;
 				}
 			}
 		}

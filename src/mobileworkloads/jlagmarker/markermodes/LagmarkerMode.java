@@ -96,7 +96,7 @@ public abstract class LagmarkerMode {
 	protected boolean findWorkloadStartFrame() {
 		while(true) {
 			VideoFrame frame = vstate.decodeNextVideoFrame();
-			if(frame == null) return false;
+			if(vstate.isEndOfStream()) return false;
 			
 			if(isStartFrame(frame)) {
 				
@@ -146,7 +146,7 @@ public abstract class LagmarkerMode {
 
 	protected void findLags() {
 		VideoFrame currFrame = vstate.extractCurrentFrame();
-		while(currFrame != null) {
+		while(!vstate.isEndOfStream()) {
 			processFrame(currFrame);
 			currFrame = vstate.decodeNextVideoFrame();
 		}

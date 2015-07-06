@@ -79,19 +79,19 @@ public class VideoState {
 
 	public VideoFrame decodeNextVideoFrame() {
 		if(historyPos == 0) {
-			if (!lnativeDecodeNextVideoFrame()) {
-				if (isEndOfStream())
-					return null;
-				else
-					throw new RuntimeException(
-							"Decoding of next video frame failed.");
+			if (isEndOfStream() || !lnativeDecodeNextVideoFrame()) {
+				if (isEndOfStream()) {
+					System.out.println("VIDEO: Video state reached the end of the stream.");
+					return getCurrFrame().clone();
+				} else {
+					throw new RuntimeException("Decoding of next video frame failed.");
+			 	}
 			}
 	
 			JRGBFrameBuffer buff = new JRGBFrameBuffer();
 	
 			if (!lnativeExtractCurrFrame(buff))
-				throw new RuntimeException(
-						"Converting current video frame to RGB buffer failed.");
+				throw new RuntimeException("Converting current video frame to RGB buffer failed.");
 	
 			setCurrFrame(new VideoFrame(nativeVideoTimeNS / 1000, timePerFrameNS / 1000,
 					nativeCurrFrameId, new RGBImage(buff)));
@@ -152,7 +152,7 @@ public class VideoState {
 	}
 
 	public boolean isEndOfStream() {
-		return endOfStream;
+		return historyPos == 0 && endOfStream;
 	}
 
 	private native boolean lnativeAllocVideoState();

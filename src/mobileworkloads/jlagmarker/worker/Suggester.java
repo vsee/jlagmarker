@@ -44,7 +44,7 @@ public class Suggester extends VStreamWorker {
 		super(outputFolder.resolve("suggestions"), sconfFile);
 		configFile = this.outputFolder.resolve(FILE_NAME_SUGGESTION_CONFIG);
 		
-		if(configFile == null || !Files.exists(configFile)) {
+		if(sconfFile == null || !Files.exists(sconfFile)) {
 			sconf = new SuggesterConfig();
 		} else {
 			try {
