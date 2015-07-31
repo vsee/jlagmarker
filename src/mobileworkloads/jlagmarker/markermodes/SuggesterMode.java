@@ -6,7 +6,7 @@ import mobileworkloads.jlagmarker.worker.Suggester;
 import mobileworkloads.jlagmarker.worker.VStreamWorker;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
 
-public class SuggesterMode extends LagmarkerMode {
+public class SuggesterMode extends LagmarkerAnalysisMode {
 
 	protected final Suggester suggester;
 	

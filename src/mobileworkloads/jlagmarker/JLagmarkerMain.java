@@ -6,11 +6,15 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import mobileworkloads.jlagmarker.args.LagMarkerArgs;
 import mobileworkloads.jlagmarker.markermodes.DetectorMode;
+import mobileworkloads.jlagmarker.markermodes.FrameDumpMode;
 import mobileworkloads.jlagmarker.markermodes.InteractiveSuggMode;
 import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
+import mobileworkloads.jlagmarker.masking.ImgMask;
 import mobileworkloads.jlagmarker.masking.MaskManager;
 
 public class JLagmarkerMain {
@@ -45,7 +49,7 @@ public class JLagmarkerMain {
 	public JLagmarkerMain(String[] cmdArgs) {
 
 		LagMarkerArgs args = new LagMarkerArgs(cmdArgs);
-		
+
 		System.out.println("Creating output folder at: " + args.outputFolder + " ...");
 		args.outputFolder = createOutputFolder(args.outputPrefix, 
 				args.outputFolder.resolve("lmrun_" + args.modeType.name() + "_" + args.outputPrefix));
@@ -66,6 +70,11 @@ public class JLagmarkerMain {
 			case DETECTOR:
 				mode = new DetectorMode(args.videoFile.toString(), args.inputFlashOffsetNS, 
 						args.inputData, args.dconfFile, args.suggImgs, args.outputPrefix, args.outputFolder);
+				break;
+			case FRAMEDUMP:
+				List<ImgMask> dumpMasks = args.dumpMaks.stream().map(name -> MaskManager.getInstance().getMask(name)).collect(Collectors.toList());
+				mode = new FrameDumpMode(args.videoFile.toString(), args.outputPrefix, args.outputFolder,
+						args.frameIntervals, dumpMasks);
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown run mode: " + args.modeType.name());

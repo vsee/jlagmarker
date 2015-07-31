@@ -7,7 +7,7 @@ import mobileworkloads.jlagmarker.worker.ImgFinder;
 import mobileworkloads.jlagmarker.worker.VStreamWorker;
 import mobileworkloads.mlgovernor.res.CSVResourceTools;
 
-public class DetectorMode extends LagmarkerMode {
+public class DetectorMode extends LagmarkerAnalysisMode {
 
 	protected final ImgFinder imgfinder;
 	
