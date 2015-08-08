@@ -28,7 +28,7 @@ public class ImgFinder extends VStreamWorker {
 		}
 		
 		public String toCSVEntry() {
-			return (flank ? "0.4" : "0.6") + "," + frameId;
+			return (flank ? "1" : "0") + "," + frameId;
 		}
 	}	
 
