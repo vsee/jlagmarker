@@ -29,6 +29,13 @@ public class DetectorMode extends LagmarkerAnalysisMode {
 	}
 
 	@Override
+	protected void saveRunResults(long runtimeMS) {
+		super.saveRunResults(runtimeMS);
+		
+		imgfinder.dumpFrameFlanks(outputFolder.resolve(outputPrefix + "_frameflanks.csv"));
+	}
+	
+	@Override
 	protected String getSpecificRunStats() {
 		StringBuilder bld = new StringBuilder();
 		
@@ -38,5 +45,5 @@ public class DetectorMode extends LagmarkerAnalysisMode {
 		bld.append("lags not found").append(CSVResourceTools.SEPARATOR).append(lprofile.lags.size() - detectedLags).append("\n");
 		
 		return bld.toString();
-	}	
+	}
 }

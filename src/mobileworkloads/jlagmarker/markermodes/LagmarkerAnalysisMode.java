@@ -60,16 +60,20 @@ public abstract class LagmarkerAnalysisMode extends LagmarkerMode {
 		
 		processVideoStream();
 		
-		System.out.println("\nSaving Results ...");
-		
-		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + ".lprofile"));
-
 		long runtimeMS = (System.currentTimeMillis() - startTimeMS);
-		dumpRunStats(outputFolder.resolve(outputPrefix + "_runstats.csv"), runtimeMS);
+
+		saveRunResults(runtimeMS);
 		
 		System.out.println("Run terminated successfully at: " + Calendar.getInstance().getTime() + " after " + (runtimeMS / 1000f) + " seconds.");
 	}
 	
+	protected void saveRunResults(long runtimeMS) {
+		System.out.println("\nSaving Results ...");
+		lprofile.dumpLagProfile(outputFolder.resolve(outputPrefix + ".lprofile"));
+		
+		dumpRunStats(outputFolder.resolve(outputPrefix + "_runstats.csv"), runtimeMS);
+	}
+
 	protected abstract VStreamWorker getWorker();
 	
 	protected void processVideoStream() {

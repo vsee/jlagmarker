@@ -1,8 +1,13 @@
 package mobileworkloads.jlagmarker.worker;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 
 import mobileworkloads.jlagmarker.lags.Lag;
 import mobileworkloads.jlagmarker.masking.MaskManager;
@@ -13,6 +18,22 @@ import mobileworkloads.jlagmarker.worker.DetectorConfig.DetectorConfParams;
 
 public class ImgFinder extends VStreamWorker {
 
+	private class FrameFlankEntry {
+		int frameId;
+		boolean flank;
+		
+		public FrameFlankEntry(boolean flank, int frameId) {
+			this.flank = flank;
+			this.frameId = frameId;
+		}
+		
+		public String toCSVEntry() {
+			return (flank ? "0.4" : "0.6") + "," + frameId;
+		}
+	}	
+
+	protected static final String FRAMEFLANK_HEADER = "frameflank,frameId";
+	
 	public static final String FILE_NAME_IMAGE_FOUND_FORMAT = "lag_%03d_found_%d.ppm";
 	public static final String FILE_NAME_DETECTION_CONFIG = "detector_config.csv";
 
@@ -29,6 +50,11 @@ public class ImgFinder extends VStreamWorker {
 
 	protected boolean changeSinceBegin; // true if the image looked different at least once since the begin frame
 	
+	// frame flank properties
+	protected VideoFrame prevFrame;
+	protected boolean lastFlank;
+	protected List<FrameFlankEntry> frameFlanks;
+	
 	public ImgFinder(Path outputFolder, Path dconfFile, Path suggImgs) {
 		super(outputFolder.resolve("detections"), dconfFile);
 		
@@ -40,10 +66,32 @@ public class ImgFinder extends VStreamWorker {
 		} catch (IOException e) {
 			throw new UncheckedIOException("Error parsing detector configuration file [" + dconfFile + "]", e);
 		}
+		
+		prevFrame = null;
+		lastFlank = false;
+		frameFlanks = new ArrayList<FrameFlankEntry>();
 	}
-
+	
 	@Override
 	public void update(VideoFrame currentFrame) {
+		generateFrameFlank(currentFrame);
+		
+		detectImage(currentFrame);
+	}
+	
+
+	private void generateFrameFlank(VideoFrame currentFrame) {
+		if(prevFrame != null) {
+			boolean imgEqual = RGBImgUtils.cmpRGBImg(currentFrame.frameImg, prevFrame.frameImg, 
+					dconfParams.mask, dconfParams.maxDiffThreshold, dconfParams.pixIgnore);
+			if(!imgEqual) lastFlank = !lastFlank;
+			
+			frameFlanks.add(new FrameFlankEntry(lastFlank, currentFrame.videoFrameId));
+		}
+		prevFrame = currentFrame;
+	}
+	
+	private void detectImage(VideoFrame currentFrame) {
 		if(imageDetected || skipLag) return; // image already found or no need to find it
 
 		// did the image look different from the lag start image at least once yet?
@@ -60,7 +108,8 @@ public class ImgFinder extends VStreamWorker {
 			}
 		}
 	}
-	
+
+
 	@Override
 	public void start(Lag currLag, VideoFrame currFrame) {
 		super.start(currLag, currFrame);
@@ -114,6 +163,24 @@ public class ImgFinder extends VStreamWorker {
 			} catch (IOException e) {
 				throw new UncheckedIOException("Error saving detected image to file!", e);
 			}
+		}
+	}
+
+	public void dumpFrameFlanks(Path outputFileName) {
+		try(BufferedWriter statWriter = Files.newBufferedWriter(outputFileName, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+			
+			statWriter.write(FRAMEFLANK_HEADER);
+			statWriter.newLine();
+			
+			for (FrameFlankEntry ff : frameFlanks) {
+				statWriter.write(ff.toCSVEntry());
+				statWriter.newLine();
+			}
+			
+			System.out.println("Frame flanks written to " + outputFileName);
+		} catch (IOException e) {
+			System.out.println("Writing frame flanks to file failed!");
+			throw new UncheckedIOException(e);
 		}
 	}
 }
