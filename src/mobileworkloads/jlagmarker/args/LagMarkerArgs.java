@@ -19,7 +19,8 @@ public class LagMarkerArgs {
 	
 			"-mode str - Run mode of lagmarker\n" +
 			"\tSUGGESTER: suggest input lag endings for a given video\n" +
-			"\t\t[-sconf file - Path to the suggester configuration file to be used]\n" +
+			"\t\t[-sconf file - Path to the suggester configuration file to be used\n" +
+			"\t\t-defaultSugg boolean - Run a fully automatic default accept suggestion to generate a suggestion config file.]\n" +
 			"\tDETECTOR: find a list of given input lag ending images in a given video\n" +
 			"\t\t-dconf file - Path to the detector configuration file to be used\n" +
 			"\t\t-suggImgs file  - Path to where the suggestions images can be found\n" +
@@ -48,6 +49,7 @@ public class LagMarkerArgs {
 	
 	
 	public LagmarkerModeType modeType;
+	public boolean defaultSugg;
 	public Path sconfFile;
 	public Path dconfFile;
 	public Path suggImgs;
@@ -74,6 +76,8 @@ public class LagMarkerArgs {
 			case SUGGESTER:
 				System.out.println("SUGGESTER CONFIG: " + 
 						(sconfFile == null || !Files.exists(sconfFile) ? "GENERATE" : sconfFile));
+				if(defaultSugg)
+					System.out.println("DEFAULT SUGGESTION ACTIVE");
 				break;
 			case DETECTOR:
 				System.out.println("DETECTOR CONFIG: " + dconfFile);
@@ -126,6 +130,12 @@ public class LagMarkerArgs {
 					sconfFile = null;
 				} else {
 					sconfFile = Paths.get(optionString);
+				}
+				optionString = Utils.getOption("defaultSugg", args);
+				if(optionString.isEmpty()) {
+					defaultSugg = false;
+				} else {
+					defaultSugg = Boolean.parseBoolean(optionString);
 				}
 				break;
 			case DETECTOR:

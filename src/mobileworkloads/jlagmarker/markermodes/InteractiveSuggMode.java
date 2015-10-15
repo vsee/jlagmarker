@@ -22,14 +22,16 @@ public class InteractiveSuggMode extends SuggesterMode {
 	protected Scanner in;
 	protected Lag currLag = null;
 	protected boolean frameProcessingFinished;
+	protected boolean defaultSugg;
 	
 	public InteractiveSuggMode(String videoName, long inputFlashOffsetNS,
-			Path inputData, Path sconfFile,	String outputPrefix, Path outputFolder) {
+			Path inputData, Path sconfFile,	String outputPrefix, Path outputFolder, boolean defaultSugg) {
 		
 		super(videoName, inputFlashOffsetNS, inputData, sconfFile, outputPrefix, outputFolder);
 		
 		in = new Scanner(System.in);
 		frameProcessingFinished = false;
+		this.defaultSugg = defaultSugg;
 	}
 	
 	@Override
@@ -186,7 +188,10 @@ public class InteractiveSuggMode extends SuggesterMode {
 		while(true) {
 
 			System.out.print("Pick an action [default 1]: ");
-			String line = in.nextLine();
+			String line = "";
+			if(defaultSugg) line = "1";
+			else line = in.nextLine();
+			
 			
 			if (line.isEmpty() || line.equalsIgnoreCase("1")) {
 				selectSuggestion();
@@ -213,13 +218,13 @@ public class InteractiveSuggMode extends SuggesterMode {
 		while(true) {
 			
 			List<Integer> suggestionIds = currLag.getSuggestionIds();
-			if(suggestionIds.size() == 1) {
-				currLag.acceptSuggestion(suggestionIds.get(0));
-				break;
-			} else if(suggestionIds.size() == 0) {
+			if(suggestionIds.size() == 0) {
 				System.out.println("LAG " + currLag.lagId + ": No suggestions found!");
 				break;
-			}
+			} else if(suggestionIds.size() == 1 || defaultSugg) {
+				currLag.acceptSuggestion(suggestionIds.get(0));
+				break;
+			} 
 			
 			System.out.print("Select suggestion: " + suggestionIds + " ");
 			String line = in.nextLine();

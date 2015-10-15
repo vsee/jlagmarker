@@ -65,7 +65,7 @@ public class JLagmarkerMain {
 		switch(args.modeType) {
 			case SUGGESTER:			
 				mode = new InteractiveSuggMode(args.videoFile.toString(), args.inputFlashOffsetNS, 
-						args.inputData, args.sconfFile, args.outputPrefix, args.outputFolder);
+						args.inputData, args.sconfFile, args.outputPrefix, args.outputFolder, args.defaultSugg);
 				break;
 			case DETECTOR:
 				mode = new DetectorMode(args.videoFile.toString(), args.inputFlashOffsetNS, 
