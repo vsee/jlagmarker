@@ -22,6 +22,9 @@ public class MaskManager {
 	
 	public static final String NO_MASK_MARKER = "NO_MASK";
 	
+	private static final int DEFAULT_FRAME_WIDTH = 1280;
+	private static final int DEFAULT_FRAME_HEIGHT = 720;
+	
 	
 	private static MaskManager instance;
 	public static MaskManager getInstance() {
@@ -34,9 +37,18 @@ public class MaskManager {
 	
 	protected Path loadedMasksFile;
 	
+	protected int frameWidth;
+	protected int frameHeight;
+	
 	private MaskManager() {
 		availableMasks = new Hashtable<String, ImgMask>();
 		availableRects = new Hashtable<String, Rectangle>();
+		setFrameDimensions(DEFAULT_FRAME_WIDTH, DEFAULT_FRAME_HEIGHT);
+	}
+	
+	public void setFrameDimensions(int width, int height) {
+		frameWidth = width;
+		frameHeight = height;
 	}
 	
 	public void clearMasks() {
@@ -99,18 +111,23 @@ public class MaskManager {
 					if(line.equals(LABEL_MASKS)) pstate = ParsingState.MASKS;
 					else {
 						// REC_PORTRAIT_LEFT,0,0,438,720
-						String[] rect = line.split(",");
-						if(rect.length < 5) {
+						String[] rectChunks = line.split(",");
+						if(rectChunks.length < 5) {
 							System.out.println("WARNING: Unexpected rectangle format: " + line);
 							continue;
 						}
-						if(availableRects.containsKey(rect[0])) {
+						if(availableRects.containsKey(rectChunks[0])) {
 							System.out.println("WARNING: Rectangle specified more than once: " + line);
 							continue;
 						}
 						
-						availableRects.put(rect[0], new Rectangle(Integer.parseInt(rect[1]), 
-								Integer.parseInt(rect[2]), Integer.parseInt(rect[3]), Integer.parseInt(rect[4])));
+						Rectangle rect = new Rectangle(Integer.parseInt(rectChunks[1]), 
+								Integer.parseInt(rectChunks[2]), Integer.parseInt(rectChunks[3]), Integer.parseInt(rectChunks[4]));
+						
+						if(rect.x0+rect.width > frameWidth || rect.y0+rect.height > frameHeight)
+							System.out.println("WARNING: Rectangle out of frame bounds: " + rect);
+						else 
+							availableRects.put(rectChunks[0], rect);
 					}
 					break;
 				case MASKS:

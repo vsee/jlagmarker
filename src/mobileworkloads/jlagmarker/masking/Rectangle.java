@@ -11,5 +11,17 @@ public class Rectangle {
 		this.y0 = y0;
 		this.width = width;
 		this.height = height;
+		
+		assert x0 >= 0 && y0 >= 0 && width > 0 && height > 0 : "Invalid Rectangle dimensions: " + toString();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder bld = new StringBuilder();
+		bld.append(x0).append(" ")
+		.append(y0).append(" ")
+		.append(width).append(" ")
+		.append(height);
+		return bld.toString();
 	}
 }
