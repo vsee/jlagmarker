@@ -23,6 +23,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 	protected Lag currLag = null;
 	protected boolean frameProcessingFinished;
 	protected boolean defaultSugg;
+	protected int autoAcceptLimit = 0;
 	
 	public InteractiveSuggMode(String videoName, long inputFlashOffsetNS,
 			Path inputData, Path sconfFile,	String outputPrefix, Path outputFolder, boolean defaultSugg) {
@@ -184,13 +185,19 @@ public class InteractiveSuggMode extends SuggesterMode {
 		System.out.println("2. Rerun Suggester.");
 		System.out.println("3. Skip Lag.");
 		System.out.println("4. Run Image Diff.");
+		System.out.println("5. Toggle Auto Accept ["
+				+ (autoAcceptLimit > 0 ? "ACTIVE for the next " + autoAcceptLimit : "INACTIVE") + "].");
 		boolean suggAccept = false;
 		while(true) {
 
 			System.out.print("Pick an action [default 1]: ");
 			String line = "";
-			if(defaultSugg) line = "1";
-			else line = in.nextLine();
+			if(defaultSugg || (autoAcceptLimit > 0 && currLag.getSuggestionIds().size() == 1)) {
+				if(autoAcceptLimit > 0) autoAcceptLimit--;
+				line = "1";
+			} else {
+				line = in.nextLine();
+			}
 			
 			
 			if (line.isEmpty() || line.equalsIgnoreCase("1")) {
@@ -206,7 +213,10 @@ public class InteractiveSuggMode extends SuggesterMode {
 				break;
 			} else if (line.equalsIgnoreCase("4")) {
 				createDiffImage(currFrame);
-			}  else {
+			}  else if(line.equalsIgnoreCase("5")) {
+				autoAcceptLimit = setAutoAcceptLimit();
+				System.out.println("Auto accept: " + (autoAcceptLimit > 0 ? "ACTIVE for the next " + autoAcceptLimit : "INACTIVE"));
+			} else {
 				System.out.println("Invalid input: " + line);
 			}
 		}
@@ -214,6 +224,27 @@ public class InteractiveSuggMode extends SuggesterMode {
 		return suggAccept;
 	}
 	
+	private int setAutoAcceptLimit() {
+		while(true) {		
+			System.out.print("Enter auto accept limit: ");
+			String line = in.nextLine();
+
+			try {
+				int limit = Integer.parseInt(line);
+
+				if (limit < 0) {
+					System.out.println("Invalid input: " + line);
+				} else {
+					return limit;
+				}
+
+			} catch (IllegalArgumentException e) {
+				System.out.println("Invalid input: " + line);
+				continue;
+			}
+		}
+	}
+
 	protected void selectSuggestion() {
 		while(true) {
 			
