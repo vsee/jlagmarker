@@ -62,6 +62,9 @@ public class InteractiveSuggMode extends SuggesterMode {
 				vstate.stopRecording();
 				// save intermediate configuration file
 				suggester.saveConfigToFile();
+				// release buffer data
+				if(currLag != null) lprofile.lags.get(currLag.lagId).releaseFrameResources();
+				System.gc();
 				
 				if(vstate.isEndOfStream()) {
 					frameProcessingFinished = true;

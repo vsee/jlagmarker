@@ -161,7 +161,11 @@ public class MaskManager {
 		if(mask == null) return false;
 		
 		for(Rectangle rect : mask.sections) {
-			colourRectRGBBuff(img.dataBuffer, rect, 0xFF);
+			if(img.getDataReleased()) 
+				throw new RuntimeException("Data buffer released unexpectedly when trying to apply mask: " + mask);
+			JRGBFrameBuffer dataBuffer = img.getDataBuffer();
+			
+			colourRectRGBBuff(dataBuffer, rect, 0xFF);
 		}
 		
 		return true;

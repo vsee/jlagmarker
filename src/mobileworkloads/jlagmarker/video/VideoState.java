@@ -1,6 +1,6 @@
 package mobileworkloads.jlagmarker.video;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class VideoState {
 
@@ -22,7 +22,7 @@ public class VideoState {
 
 	private boolean endOfStream;
 
-	private final LinkedList<VideoFrame> frameHistory;
+	private final ArrayList<VideoFrame> frameHistory;
 	private int historyPos; // greater than 0 if we have currently skipped backwards in the video
 	
 	private boolean isRecording;
@@ -32,7 +32,7 @@ public class VideoState {
 		videoFileName = fileName;
 		endOfStream = false;
 
-		frameHistory = new LinkedList<VideoFrame>();
+		frameHistory = new ArrayList<VideoFrame>();
 		historyPos = 0;
 		
 		isRecording = false;
@@ -60,12 +60,13 @@ public class VideoState {
 	}
 
 	private void setCurrFrame(VideoFrame currFrame) {
-		frameHistory.addFirst(currFrame);
+		frameHistory.add(0, currFrame);
 
 		int maxDepth = isRecording ? MAX_RECORDING_DEPTH : MAX_AUTO_HISTORY_DEPTH;
 		while(frameHistory.size() > maxDepth) {
-			frameHistory.removeLast();
+			frameHistory.remove(frameHistory.size() - 1);
 		}
+		frameHistory.trimToSize();
 	}
 
 	public float getFrameRate() {
@@ -115,8 +116,8 @@ public class VideoState {
 		bld.append("Current Frame: ").append(getCurrFrame()).append("\n")
 		.append("History Length: ").append(frameHistory.size()).append("\n")
 		.append("History Pointer: ").append(historyPos).append("\n")
-		.append("History Bounds: ").append(frameHistory.getLast().videoFrameId)
-		.append(" --> ").append(frameHistory.getFirst().videoFrameId).append("\n")
+		.append("History Bounds: ").append(frameHistory.get(frameHistory.size() - 1).videoFrameId)
+		.append(" --> ").append(frameHistory.get(0).videoFrameId).append("\n")
 		.append("Is recording: ").append(isRecording);
 		
 		return bld.toString();
@@ -147,8 +148,10 @@ public class VideoState {
 	public void stopRecording() {
 		isRecording = false;
 		while(frameHistory.size() > MAX_AUTO_HISTORY_DEPTH) {
-			frameHistory.removeLast();
+			frameHistory.remove(frameHistory.size() - 1);
 		}
+		frameHistory.trimToSize();
+		System.gc();
 	}
 
 	public boolean isEndOfStream() {

@@ -15,19 +15,24 @@ public final class RGBImgUtils {
 	private RGBImgUtils() { }
 
 	private static boolean maxMetricDiff(RGBImage img0, RGBImage img1, int threshold, int maxPixelIgnore) {
+		if(img0.getDataReleased() || img1.getDataReleased()) 
+			throw new RuntimeException("Data buffer released unexpectedly when trying comparing images.");
+		JRGBFrameBuffer buff0 = img0.getDataBuffer();
+		JRGBFrameBuffer buff1 = img1.getDataBuffer();
+		
 		if(img0 == null || img1 == null) throw new IllegalArgumentException("Given image must not be null.");
-		assert img0.dataBuffer.getHeight() == img1.dataBuffer.getHeight()
-				&& img0.dataBuffer.getWidth() == img1.dataBuffer.getWidth() : "Given image dimensions do not match.";
+		assert buff0.getHeight() == buff1.getHeight()
+				&& buff0.getWidth() == buff1.getWidth() : "Given image dimensions do not match.";
 		
 		int ignoredPixels = 0;
 		
-		for(int y = 0; y < img0.dataBuffer.getHeight(); y++) {
-			for(int x = 0; x < img0.dataBuffer.getWidth(); x++) {
+		for(int y = 0; y < buff0.getHeight(); y++) {
+			for(int x = 0; x < buff0.getWidth(); x++) {
 				boolean pixelDiffers = false;
 
 				for (int channelIdx = 0; channelIdx < JRGBFrameBuffer.CHANNEL_NUM; channelIdx++) {
-					int d0 = img0.dataBuffer.getChannel(x, y, channelIdx);
-					int d1 = img1.dataBuffer.getChannel(x, y, channelIdx);
+					int d0 = buff0.getChannel(x, y, channelIdx);
+					int d1 = buff1.getChannel(x, y, channelIdx);
 					int dist = Math.abs(d1 - d0);
 					pixelDiffers |= dist > threshold;
 				}

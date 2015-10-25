@@ -125,12 +125,16 @@ public abstract class LagmarkerAnalysisMode extends LagmarkerMode {
 			throw new RuntimeException("Error applying mask to find white start frame.");
 		}
 
+		if(frame.frameImg.getDataReleased()) 
+			throw new RuntimeException("Data buffer released unexpectedly: " + frame);
+		JRGBFrameBuffer dataBuffer = frame.frameImg.getDataBuffer();
+		
 		// look for completely white frame
-		for (int i = 0; i < frame.frameImg.dataBuffer.getWidth()
-				* frame.frameImg.dataBuffer.getHeight()
+		for (int i = 0; i < dataBuffer.getWidth()
+				* dataBuffer.getHeight()
 				* JRGBFrameBuffer.CHANNEL_NUM; i++) {
 			
-			if (frame.frameImg.dataBuffer.getRawChannel(i) != 0xFF)
+			if (dataBuffer.getRawChannel(i) != 0xFF)
 				return false;
 		}
 

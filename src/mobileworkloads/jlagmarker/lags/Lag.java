@@ -77,6 +77,14 @@ public class Lag {
 		suggestions.clear();
 	}
 	
+	public void releaseFrameResources() {
+		startFrame.frameImg.releaseDataResources();
+		if(endFrame != null) endFrame.frameImg.releaseDataResources();
+		for(VideoFrame suggFrame : suggestions) {
+			suggFrame.frameImg.releaseDataResources();
+		}
+	}
+	
 	public String toCSVEntry() {
 		StringBuilder bld = new StringBuilder();
 		bld.append(lagId).append(CSVResourceTools.SEPARATOR)
@@ -116,5 +124,4 @@ public class Lag {
 		
 		return bld.toString();
 	}
-
 }
