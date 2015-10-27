@@ -65,6 +65,10 @@ public class VideoState {
 		int maxDepth = isRecording ? MAX_RECORDING_DEPTH : MAX_AUTO_HISTORY_DEPTH;
 		while(frameHistory.size() > maxDepth) {
 			frameHistory.remove(frameHistory.size() - 1);
+			
+			System.out.println("JDEBUG: SIZE: " + frameHistory.size() + " HEAD: "
+					+ frameHistory.get(0).videoFrameId + " TAIL: "
+					+ frameHistory.get(frameHistory.size() - 1).videoFrameId);
 		}
 		frameHistory.trimToSize();
 	}
@@ -143,15 +147,21 @@ public class VideoState {
 	
 	public void startRecording() {
 		isRecording = true;
+		lnativeStartRecording();
 	}
 	
 	public void stopRecording() {
 		isRecording = false;
 		while(frameHistory.size() > MAX_AUTO_HISTORY_DEPTH) {
 			frameHistory.remove(frameHistory.size() - 1);
+			
+			System.out.println("JDEBUG: SIZE: " + frameHistory.size() + " HEAD: "
+					+ frameHistory.get(0).videoFrameId + " TAIL: "
+					+ frameHistory.get(frameHistory.size() - 1).videoFrameId);
 		}
 		frameHistory.trimToSize();
 		System.gc();
+		lnativeStopRecording();
 	}
 
 	public boolean isEndOfStream() {
@@ -167,6 +177,15 @@ public class VideoState {
 	private native boolean lnativeExtractCurrFrame(JRGBFrameBuffer currFrame);
 
 	private native void lnativeDumpVideoFormat();
+	
+	
+	public native void lnativeStartRecording();
+	
+	public native void lnativeStopRecording();
+	
+	public native void lnativeSkipBackwards(int frameOffset);
+	
+	public native VideoFrame lnativeGetFrameFromHistory(int frameOffset);
 
 	static {
 		System.loadLibrary("VideoState");
