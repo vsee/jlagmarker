@@ -20,9 +20,10 @@ typedef struct NativeVideoFrame {
 
 	int videoFrameId;
 
-	NativeRGBBuffer *frameImg;
+	NativeRGBBuffer *nbuffer;
 
 	struct NativeVideoFrame* next;
+	struct NativeVideoFrame* prev;
 } NativeVideoFrame;
 
 

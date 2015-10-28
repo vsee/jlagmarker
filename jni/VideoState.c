@@ -40,9 +40,10 @@ static NativeVideoFrame* create_nativeFrame(long startTimeUS, long durationUS, i
 
 	videoFrame->videoFrameId = frameId;
 
-	videoFrame->frameImg = img;
+	videoFrame->nbuffer = img;
 
 	videoFrame->next = NULL;
+	videoFrame->prev = NULL;
 	return videoFrame;
 }
 
@@ -56,7 +57,7 @@ static void free_frameBuffer(NativeRGBBuffer* nrgbBuffer) {
 
 static void free_videoFrame(NativeVideoFrame* frame) {
 	if(frame != NULL) {
-		free_frameBuffer(frame->frameImg);
+		free_frameBuffer(frame->nbuffer);
 		free(frame);
 	}
 }
@@ -65,12 +66,17 @@ static NativeVideoFrame* dequeue_videoFrame(NativeVideoState* vstate) {
 	NativeVideoFrame* res = NULL;
 	if(vstate->frameHistoryHead != NULL) {
 		res = vstate->frameHistoryHead;
-		vstate->frameHistoryHead = res->next;
-		vstate->historySize--;
 
-		if(vstate->frameHistoryHead == NULL) {
+		vstate->frameHistoryHead = res->next;
+
+		if(res->next != NULL) {
+			res->next->prev = NULL;
+			res->next = NULL;
+		} else {
 			vstate->historyPos = vstate->frameHistoryTail = NULL;
 		}
+
+		vstate->historySize--;
 	}
 
 	fprintf(stdout, "DEBUG: History Size: %d Head: %d Tail: %d Pos: %d\n",
@@ -93,6 +99,7 @@ static void enqueue_videoFrame(NativeVideoState* vstate, NativeVideoFrame* video
 		vstate->historySize++;
 	} else if(vstate->frameHistoryHead != NULL && vstate->frameHistoryTail != NULL) {
 		vstate->frameHistoryTail->next = videoFrame;
+		videoFrame->prev = vstate->frameHistoryTail;
 		vstate->historyPos = vstate->frameHistoryTail = videoFrame;
 		vstate->historySize++;
 	} else {
@@ -120,20 +127,20 @@ static void clear_videoFrameHistory(NativeVideoState* vstate) {
 
 
 
-static bool add_video_frame_to_history(NativeVideoState *vstate, uint8_t *buffer, AVFrame *pFrameRGB) {
+static bool add_video_frame_to_history(NativeVideoFrame **nVideoFrame, NativeVideoState *vstate, uint8_t *buffer, AVFrame *pFrameRGB) {
 	NativeRGBBuffer* nrgbBuffer = create_nrgbBuffer(vstate->pCodecCtx->width, vstate->pCodecCtx->height, buffer, pFrameRGB);
 	if(nrgbBuffer == NULL) {
 		fprintf(stderr, "Native RGB Buffer allocation failed!\n");
 		return false;
 	}
-	NativeVideoFrame* nvFrame = create_nativeFrame(vstate->nativeVideoTimeNS / 1000,
+	*nVideoFrame = create_nativeFrame(vstate->nativeVideoTimeNS / 1000,
 			vstate->timePerFrameNS / 1000, vstate->nativeCurrFrameId, nrgbBuffer);
-	if(nvFrame == NULL) {
+	if(*nVideoFrame == NULL) {
 		fprintf(stderr, "Native Video Frame allocation failed!\n");
 		return false;
 	}
 
-	enqueue_videoFrame(vstate, nvFrame);
+	enqueue_videoFrame(vstate, *nVideoFrame);
 
 	int maxDepth = vstate->isRecording ? MAX_RECORDING_DEPTH : MAX_AUTO_HISTORY_DEPTH;
 	while(vstate->historySize > maxDepth) {
@@ -291,40 +298,7 @@ JNIEXPORT void JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeF
 	free(nVideoState);
 }
 
-JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeDecodeNextVideoFrame(JNIEnv *env, jobject videoState) {
-	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
-	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
-	jmethodID midUpdateFrameCounter = (*env)->GetMethodID(env, videoStateClass, "updateFrameCounter", "()V");
-	if (!fidNativeVideoState || !midUpdateFrameCounter) {
-		fprintf(stderr, "Given video state has unexpected format!\n");
-		return false;
-	}
-	NativeVideoState* nVideoState = (NativeVideoState*)(*env)->GetLongField(env, videoState, fidNativeVideoState);
 
-	int frameFinished = 0;
-
-	while(av_read_frame(nVideoState->pFormatCtx, &nVideoState->currPacket) >= 0) {
-
-		// Is this a packet from the video stream?
-		if (nVideoState->currPacket.stream_index == nVideoState->videoStreamIdx) {
-			// Decode video frame
-			avcodec_decode_video2(nVideoState->pCodecCtx, nVideoState->currFrameYUV, &frameFinished, &nVideoState->currPacket);
-
-			// Did we get a video frame?
-			if (frameFinished) {
-			   (*env)->CallVoidMethod(env, videoState, midUpdateFrameCounter);
-			   	nVideoState->nativeCurrFrameId++;
-			   	nVideoState->nativeVideoTimeNS += nVideoState->timePerFrameNS;
-				return true;
-			}
-		}
-	}
-
-	jfieldID fidEndOfStream = (*env)->GetFieldID(env, videoStateClass, "endOfStream", "Z");
-	(*env)->SetBooleanField(env, videoState, fidEndOfStream, true);
-
-	return false;
-}
 
 static bool setJRGBbuffer(JNIEnv *env, jobject buff, jint width, jint height, jbyte* nativeBuff) {
 	if(buff == NULL) {
@@ -356,6 +330,33 @@ static bool setJRGBbuffer(JNIEnv *env, jobject buff, jint width, jint height, jb
 	jbyteArray jbuffer = (*env)->NewByteArray(env, buffSize);
 	(*env)->SetByteArrayRegion(env, jbuffer, 0, buffSize, nativeBuff);
 	(*env)->SetObjectField(env, buff, fidbuffer, jbuffer);
+
+	return true;
+}
+
+static bool setJVideoFrame(JNIEnv *env, jobject jframeInfo, NativeVideoFrame* nframe) {
+	if(jframeInfo == NULL) {
+		fprintf(stderr, "Given target java frame info must not be null!\n");
+		return false;
+	}
+
+	if(nframe == NULL) {
+		fprintf(stderr, "Given native source frame must not be null!\n");
+		return false;
+	}
+
+	jclass jvideoFrameInfoClass = (*env)->GetObjectClass(env, jframeInfo);
+	jfieldID fidstartTimeUS = (*env)->GetFieldID(env, jvideoFrameInfoClass, "startTimeUS", "J");
+	jfieldID fiddurationUS = (*env)->GetFieldID(env, jvideoFrameInfoClass, "durationUS", "J");
+	jfieldID fidframeId = (*env)->GetFieldID(env, jvideoFrameInfoClass, "frameId", "I");
+	if (!fidstartTimeUS || !fiddurationUS || !fidframeId ) {
+		fprintf(stderr, "Given target videoFrame info has unexpected format!\n");
+		return false;
+	}
+
+	(*env)->SetLongField(env, jframeInfo, fidstartTimeUS, nframe->startTimeUS);
+	(*env)->SetLongField(env, jframeInfo, fiddurationUS, nframe->durationUS);
+	(*env)->SetIntField(env, jframeInfo, fidframeId, nframe->videoFrameId);
 
 	return true;
 }
@@ -396,7 +397,16 @@ static int img_convert(AVPicture* dst, enum PixelFormat dst_pix_fmt,
 	return result;
 }
 
-JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeExtractCurrFrame(JNIEnv *env, jobject videoState, jobject currFrame) {
+
+/*
+ * TODO
+ * add extract frame from history native call
+ * test test test
+ */
+
+JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeDecodeAndExtractNextVideoFrame
+  (JNIEnv *env, jobject videoState, jobject frame, jobject frameBuffer) {
+
 	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
 	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
 	if (!fidNativeVideoState) {
@@ -405,57 +415,78 @@ JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnat
 	}
 	NativeVideoState* nVideoState = (NativeVideoState*)(*env)->GetLongField(env, videoState, fidNativeVideoState);
 
-	// Allocate RGB video frames
-	uint8_t *buffer;
-	AVFrame *pFrameRGB = allocate_RGB_frame(&buffer, nVideoState->pCodecCtx);
-	if (pFrameRGB == NULL) {
-		fprintf(stderr, "RGBFrame allocation failed!\n");
-		return false;
+	NativeVideoFrame* nVideoFrame;
+	if(nVideoState->historyPos == nVideoState->frameHistoryTail) {
+		int frameFinished = 0;
+
+		while(av_read_frame(nVideoState->pFormatCtx, &nVideoState->currPacket) >= 0) {
+
+			// Is this a packet from the video stream?
+			if (nVideoState->currPacket.stream_index == nVideoState->videoStreamIdx) {
+				// Decode video frame
+				avcodec_decode_video2(nVideoState->pCodecCtx, nVideoState->currFrameYUV, &frameFinished, &nVideoState->currPacket);
+
+				// Did we get a video frame?
+				if (frameFinished) {
+				   	nVideoState->nativeCurrFrameId++;
+				   	nVideoState->nativeVideoTimeNS += nVideoState->timePerFrameNS;
+				   	break;
+				}
+			}
+		}
+
+		if(frameFinished) {
+			// Allocate RGB video frames
+			uint8_t *buffer;
+			AVFrame *pFrameRGB = allocate_RGB_frame(&buffer, nVideoState->pCodecCtx);
+			if (pFrameRGB == NULL) {
+				fprintf(stderr, "RGBFrame allocation failed!\n");
+				return false;
+			}
+
+			// Convert the begin frame image from its native format to RGB
+			img_convert((AVPicture *) pFrameRGB, PIX_FMT_RGB24,
+					(AVPicture*) nVideoState->currFrameYUV, nVideoState->pCodecCtx->pix_fmt,
+					nVideoState->pCodecCtx->width, nVideoState->pCodecCtx->height);
+			av_free_packet(&nVideoState->currPacket);
+
+			if(!add_video_frame_to_history(&nVideoFrame, nVideoState, buffer, pFrameRGB)){
+				fprintf(stderr, "Adding Native Video Frame to history failed!\n");
+				return false;
+			}
+
+
+		} else {
+			jfieldID fidEndOfStream = (*env)->GetFieldID(env, videoStateClass, "endOfStream", "Z");
+			(*env)->SetBooleanField(env, videoState, fidEndOfStream, true);
+
+			return false;
+		}
+
+
+	} else { // browsing history
+		nVideoState->historyPos = nVideoState->historyPos->next;
+		nVideoFrame = nVideoState->historyPos;
 	}
 
-	// Convert the begin frame image from its native format to RGB
-	img_convert((AVPicture *) pFrameRGB, PIX_FMT_RGB24,
-			(AVPicture*) nVideoState->currFrameYUV, nVideoState->pCodecCtx->pix_fmt,
-			nVideoState->pCodecCtx->width, nVideoState->pCodecCtx->height);
-	av_free_packet(&nVideoState->currPacket);
-
-	if (!setJRGBbuffer(env, currFrame, nVideoState->pCodecCtx->width,
-			nVideoState->pCodecCtx->height, (jbyte*) pFrameRGB->data[0])) {
+	// fill in java objects with native ones
+	if (!setJRGBbuffer(env, frameBuffer, nVideoFrame->nbuffer->width,
+			nVideoFrame->nbuffer->height, (jbyte*) nVideoFrame->nbuffer->pFrameRGB->data[0])) {
 		fprintf(stderr, "RGBFrameBuffer allocation failed!\n");
 		return false;
 	}
 
-	if(!add_video_frame_to_history(nVideoState, buffer, pFrameRGB)){
-		fprintf(stderr, "Adding Native Video Frame to history failed!\n");
+	if (!setJVideoFrame(env, frame, nVideoFrame)) {
+		fprintf(stderr, "Java Video Frame allocation failed!\n");
 		return false;
 	}
 
+	fprintf(stdout, "DEBUG: Extracted Frame %d %ld %ld\n",
+			nVideoFrame->videoFrameId, nVideoFrame->startTimeUS, nVideoFrame->endTimeUS
+);
+
 	return true;
 }
-
-/*
- * TODO
- * add record start and end native call
- * add skip backwards native call
- * implement history pointer moving
- * add functionality to extract current frame that considers the history when looking for a frame to return
- * remove uneccessary stuff from java videostate
- * add extract frame from history native call
- * test test test
- */
-
-//public void startRecording() {
-//	isRecording = true;
-//}
-//
-//public void stopRecording() {
-//	isRecording = false;
-//	while(frameHistory.size() > MAX_AUTO_HISTORY_DEPTH) {
-//		frameHistory.remove(frameHistory.size() - 1);
-//	}
-//	frameHistory.trimToSize();
-//	System.gc();
-//}
 
 JNIEXPORT void JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeStartRecording(JNIEnv *env, jobject videoState) {
 	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
@@ -480,8 +511,26 @@ JNIEXPORT void JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeS
 	}
 }
 
-JNIEXPORT void JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeSkipBackwards(JNIEnv *env, jobject videoState, jint frameOffset) {
+JNIEXPORT bool JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeSkipBackwards(JNIEnv *env, jobject videoState, jint frameOffset) {
+	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
+	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
+	if (!fidNativeVideoState) fprintf(stderr, "Given video state has unexpected format!\n");
 
+	NativeVideoState* nVideoState = (NativeVideoState*)(*env)->GetLongField(env, videoState, fidNativeVideoState);
+
+	if(frameOffset < 0 || frameOffset >= nVideoState->historySize ||
+			nVideoState->historyPos != nVideoState->frameHistoryTail) { // already rewinded
+		// TODO if history pos already moved out
+		fprintf(stderr, "ERROR: Video frame history rewind out of range: %d\n", frameOffset);
+		return false;
+	}
+
+	while(frameOffset > 0) {
+		nVideoState->historyPos = nVideoState->historyPos->prev;
+		frameOffset--;
+	}
+
+	return true;
 }
 
 JNIEXPORT jobject JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeGetFrameFromHistory(JNIEnv *env, jobject videoState) {

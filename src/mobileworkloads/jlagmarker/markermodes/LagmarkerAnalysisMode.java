@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Calendar;
 
@@ -90,6 +91,13 @@ public abstract class LagmarkerAnalysisMode extends LagmarkerMode {
 		while(true) {
 			VideoFrame frame = vstate.decodeNextVideoFrame();
 			if(vstate.isEndOfStream()) return false;
+			
+			try {
+				frame.frameImg.writeToFile(Paths.get("/home/vseeker/workspace/tmp/frame_" + frame.videoFrameId + ".ppm"), false);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			if(isStartFrame(frame)) {
 				
