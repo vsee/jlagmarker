@@ -78,16 +78,6 @@ static NativeVideoFrame* dequeue_videoFrame(NativeVideoState* vstate) {
 
 		vstate->historySize--;
 	}
-
-	fprintf(stdout, "DEBUG: History Size: %d Head: %d Tail: %d Pos: %d\n",
-			vstate->historySize,
-			vstate->frameHistoryHead == NULL ?
-					-1 : vstate->frameHistoryHead->videoFrameId,
-			vstate->frameHistoryTail == NULL ?
-					-1 : vstate->frameHistoryTail->videoFrameId,
-			vstate->historyPos == NULL ?
-					-1 : vstate->historyPos->videoFrameId);
-
 	return res;
 }
 
@@ -105,16 +95,6 @@ static void enqueue_videoFrame(NativeVideoState* vstate, NativeVideoFrame* video
 	} else {
 		fprintf(stderr, "ERROR: Corrupted video frame queue!\n");
 	}
-
-	fprintf(stdout, "DEBUG: History Size: %d Head: %d Tail: %d Pos: %d\n",
-			vstate->historySize,
-			vstate->frameHistoryHead == NULL ?
-					-1 : vstate->frameHistoryHead->videoFrameId,
-			vstate->frameHistoryTail == NULL ?
-					-1 : vstate->frameHistoryTail->videoFrameId,
-			vstate->historyPos == NULL ?
-					-1 : vstate->historyPos->videoFrameId);
-
 }
 
 static void clear_videoFrameHistory(NativeVideoState* vstate) {
@@ -480,11 +460,6 @@ JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnat
 		fprintf(stderr, "Java Video Frame allocation failed!\n");
 		return false;
 	}
-
-	fprintf(stdout, "DEBUG: Extracted Frame %d %ld %ld\n",
-			nVideoFrame->videoFrameId, nVideoFrame->startTimeUS, nVideoFrame->endTimeUS
-);
-
 	return true;
 }
 

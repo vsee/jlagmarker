@@ -1,5 +1,6 @@
 package mobileworkloads.jlagmarker.video;
 
+import mobileworkloads.jlagmarker.JLagmarkerMain;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class VideoState {
@@ -47,17 +48,23 @@ public class VideoState {
 
 	public VideoFrame decodeNextVideoFrame() {
 		if (isEndOfStream()) {
-			System.out.println("VIDEO: Video state reached the end of the stream.");
+			
 		} else {
 			JRGBFrameBuffer buff = new JRGBFrameBuffer();
 			NativeVideoFrameInfo frameInfo = new NativeVideoFrameInfo();
 			if(!lnativeDecodeAndExtractNextVideoFrame(frameInfo, buff)) {
-				throw new RuntimeException("Decoding of next video frame failed.");
+				if(isEndOfStream()) {
+					System.out.println("VIDEO: Video state reached the end of the stream.");
+				} else {
+					throw new RuntimeException("Decoding of next video frame failed.");
+				}
+			} else {
+				currentFrame = new VideoFrame(frameInfo.startTimeUS, frameInfo.durationUS,
+						frameInfo.frameId, new RGBImage(buff));
 			}
-			
-			currentFrame = new VideoFrame(frameInfo.startTimeUS, frameInfo.durationUS,
-					frameInfo.frameId, new RGBImage(buff));
 		}
+		
+//		JLagmarkerMain.memOutput();
 		
 		return extractCurrentFrame();
 	}
