@@ -76,15 +76,22 @@ public class SuggestionViewGenerator {
 				// IMAGES
 				statWriter.write("<tr>");
 				statWriter.newLine();
+				
+				String beginFileLocation = l.startFrame.frameImg.getFileLocation().toString().replace(".ppm", ".jpg");
+				beginFileLocation = beginFileLocation.substring(beginFileLocation.indexOf("beginFrames"));
+				
 				statWriter.write("<td><img id=\"beg-"+ l.lagId +"\" src=\"" + 
-						l.startFrame.frameImg.getFileLocation().toString().replace(".ppm", ".jpg") + "\" width=\"200\"/></td>");
+						beginFileLocation + "\" width=\"200\"/></td>");
 				statWriter.newLine();
 				
 				for (int i = 0; i < suggIds.size(); i++) {
+					String suggFileLocation = suggFiles.get(i).toString().replace(".ppm", ".jpg");
+					suggFileLocation = suggFileLocation.substring(suggFileLocation.indexOf("suggestions"));
+					
 					statWriter.write("<td><img "
 							+ (l.getEndFrame() != null && l.getEndFrame().videoFrameId == suggIds.get(i) ? "class=\"hl\"" : "") + 
 							"  id=\"" + l.lagId + "F" + suggIds.get(i) + "\" src=\"" + 
-							suggFiles.get(i).toString().replace(".ppm", ".jpg") + "\" width=\"200\"/></td>");
+							suggFileLocation + "\" width=\"200\"/></td>");
 					statWriter.newLine();
 				}
 

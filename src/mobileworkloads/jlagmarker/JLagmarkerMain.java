@@ -14,6 +14,7 @@ import mobileworkloads.jlagmarker.markermodes.DetectorMode;
 import mobileworkloads.jlagmarker.markermodes.FrameDumpMode;
 import mobileworkloads.jlagmarker.markermodes.InteractiveSuggMode;
 import mobileworkloads.jlagmarker.markermodes.LagmarkerMode;
+import mobileworkloads.jlagmarker.markermodes.LagmarkerMode.LagmarkerModeType;
 import mobileworkloads.jlagmarker.masking.ImgMask;
 import mobileworkloads.jlagmarker.masking.MaskManager;
 
@@ -52,7 +53,9 @@ public class JLagmarkerMain {
 
 		System.out.println("Creating output folder at: " + args.outputFolder + " ...");
 		args.outputFolder = createOutputFolder(args.outputPrefix, 
-				args.outputFolder.resolve("lmrun_" + args.modeType.name() + "_" + args.outputPrefix));
+				args.outputFolder.resolve("lmrun_" + args.modeType.name()
+						+ (args.modeType == LagmarkerModeType.SUGGESTER && args.defaultSugg ? "_DEFAULT" : "") 
+						+ "_" + args.outputPrefix));
 		System.out.println();
 		
 		try {
