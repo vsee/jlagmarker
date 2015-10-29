@@ -511,7 +511,8 @@ JNIEXPORT void JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeS
 	}
 }
 
-JNIEXPORT bool JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeSkipBackwards(JNIEnv *env, jobject videoState, jint frameOffset) {
+JNIEXPORT bool JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeSkipBackwards
+	(JNIEnv *env, jobject videoState, jint frameOffset, jobject frame, jobject frameBuffer) {
 	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
 	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
 	if (!fidNativeVideoState) fprintf(stderr, "Given video state has unexpected format!\n");
@@ -520,7 +521,6 @@ JNIEXPORT bool JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeS
 
 	if(frameOffset < 0 || frameOffset >= nVideoState->historySize ||
 			nVideoState->historyPos != nVideoState->frameHistoryTail) { // already rewinded
-		// TODO if history pos already moved out
 		fprintf(stderr, "ERROR: Video frame history rewind out of range: %d\n", frameOffset);
 		return false;
 	}
@@ -528,6 +528,19 @@ JNIEXPORT bool JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeS
 	while(frameOffset > 0) {
 		nVideoState->historyPos = nVideoState->historyPos->prev;
 		frameOffset--;
+	}
+
+	// fill in java objects with native ones
+	NativeVideoFrame* nVideoFrame = nVideoState->historyPos;
+	if (!setJRGBbuffer(env, frameBuffer, nVideoFrame->nbuffer->width,
+			nVideoFrame->nbuffer->height, (jbyte*) nVideoFrame->nbuffer->pFrameRGB->data[0])) {
+		fprintf(stderr, "RGBFrameBuffer allocation failed!\n");
+		return false;
+	}
+
+	if (!setJVideoFrame(env, frame, nVideoFrame)) {
+		fprintf(stderr, "Java Video Frame allocation failed!\n");
+		return false;
 	}
 
 	return true;

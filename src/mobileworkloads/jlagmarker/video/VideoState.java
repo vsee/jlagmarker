@@ -78,8 +78,13 @@ public class VideoState {
 	}
 
 	public void skipBackwards(int frameOffset) {
-		if(!lnativeSkipBackwards(frameOffset))
+		JRGBFrameBuffer buff = new JRGBFrameBuffer();
+		NativeVideoFrameInfo frameInfo = new NativeVideoFrameInfo();
+		if(!lnativeSkipBackwards(frameOffset, frameInfo, buff))
 			throw new IllegalArgumentException("Video frame history lookup out of range: " + frameOffset);
+		
+		currentFrame = new VideoFrame(frameInfo.startTimeUS, frameInfo.durationUS,
+				frameInfo.frameId, new RGBImage(buff));
 	}
 	
 	public VideoFrame getFrameFromHistory(int frameOffset) {
@@ -117,7 +122,7 @@ public class VideoState {
 	
 	public native void lnativeStopRecording();
 	
-	public native boolean lnativeSkipBackwards(int frameOffset);
+	public native boolean lnativeSkipBackwards(int frameOffset, NativeVideoFrameInfo frameInfo, JRGBFrameBuffer frameBuffer);
 	
 	public native VideoFrame lnativeGetFrameFromHistory(int frameOffset);
 
