@@ -24,16 +24,27 @@ extern "C" {
 
 static NativeRGBBuffer* create_nrgbBuffer(int width, int height, uint8_t *buffer, AVFrame *pFrameRGB) {
 	NativeRGBBuffer* nrgbBuffer = (NativeRGBBuffer*) malloc(sizeof(NativeRGBBuffer));
+	if(!nrgbBuffer) {
+		fprintf(stderr, "ERROR: Not enough memory!\n");
+		return NULL;
+	}
+
 	nrgbBuffer->width = width;
 	nrgbBuffer->height = height;
 	nrgbBuffer->buffSize = width * height * 3; // assume 3 colour channels per pixel;
 	nrgbBuffer->buffer = buffer;
 	nrgbBuffer->pFrameRGB = pFrameRGB;
+
 	return nrgbBuffer;
 }
 
 static NativeVideoFrame* create_nativeFrame(long startTimeUS, long durationUS, int frameId, NativeRGBBuffer* img) {
 	NativeVideoFrame* videoFrame = (NativeVideoFrame*) malloc(sizeof(NativeVideoFrame));
+	if(!videoFrame) {
+		fprintf(stderr, "ERROR: Not enough memory!\n");
+		return NULL;
+	}
+
 	videoFrame->startTimeUS = startTimeUS;
 	videoFrame->endTimeUS = startTimeUS + durationUS;
 	videoFrame->durationUS = durationUS;
@@ -44,6 +55,7 @@ static NativeVideoFrame* create_nativeFrame(long startTimeUS, long durationUS, i
 
 	videoFrame->next = NULL;
 	videoFrame->prev = NULL;
+
 	return videoFrame;
 }
 
@@ -185,6 +197,11 @@ JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnat
 	}
 
 	NativeVideoState* nVideoState = (NativeVideoState*) malloc(sizeof(NativeVideoState));
+	if(!nVideoState) {
+		fprintf(stderr, "ERROR: Not enough memory!\n");
+		return false;
+	}
+
 	(*env)->SetLongField(env, videoState, fidNativeVideoState, (long)nVideoState);
 
 	jstring videoFileName = (*env)->GetObjectField(env, videoState, fidVideoFileName);
@@ -350,6 +367,10 @@ static AVFrame* allocate_RGB_frame(uint8_t ** buffer, AVCodecContext *pCodecCtx)
 	numBytes = avpicture_get_size(PIX_FMT_RGB24, pCodecCtx->width,
 			pCodecCtx->height);
 	*buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
+	if(!*buffer) {
+		fprintf(stderr, "ERROR: Not enough memory!\n");
+		return NULL;
+	}
 
 	// Assign appropriate parts of buffer to image planes in pFrameRGB
 	// Note that pFrameRGB is an AVFrame, but AVFrame is a superset
@@ -376,13 +397,6 @@ static int img_convert(AVPicture* dst, enum PixelFormat dst_pix_fmt,
 
 	return result;
 }
-
-
-/*
- * TODO
- * add extract frame from history native call
- * test test test
- */
 
 JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeDecodeAndExtractNextVideoFrame
   (JNIEnv *env, jobject videoState, jobject frame, jobject frameBuffer) {
@@ -486,7 +500,7 @@ JNIEXPORT void JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeS
 	}
 }
 
-JNIEXPORT bool JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeSkipBackwards
+JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeSkipBackwards
 	(JNIEnv *env, jobject videoState, jint frameOffset, jobject frame, jobject frameBuffer) {
 	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
 	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
@@ -521,8 +535,39 @@ JNIEXPORT bool JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeS
 	return true;
 }
 
-JNIEXPORT jobject JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeGetFrameFromHistory(JNIEnv *env, jobject videoState) {
-	return NULL;
+JNIEXPORT jboolean JNICALL Java_mobileworkloads_jlagmarker_video_VideoState_lnativeGetFrameFromHistory
+	(JNIEnv *env, jobject videoState, jint frameOffset, jobject frame, jobject frameBuffer) {
+
+	jclass videoStateClass = (*env)->GetObjectClass(env, videoState);
+	jfieldID fidNativeVideoState = (*env)->GetFieldID(env, videoStateClass, "pNativeVideoState", "J");
+	if (!fidNativeVideoState) fprintf(stderr, "Given video state has unexpected format!\n");
+
+	NativeVideoState* nVideoState = (NativeVideoState*)(*env)->GetLongField(env, videoState, fidNativeVideoState);
+
+	if(frameOffset < 0 || frameOffset >= nVideoState->historySize) {
+		fprintf(stderr, "ERROR: Video frame history lookup out of range: %d\n", frameOffset);
+		return false;
+	}
+
+	NativeVideoFrame* nVideoFrame = nVideoState->frameHistoryTail;
+	while(frameOffset > 0) {
+		nVideoFrame = nVideoFrame->prev;
+		frameOffset--;
+	}
+
+	// fill in java objects with native ones
+	if (!setJRGBbuffer(env, frameBuffer, nVideoFrame->nbuffer->width,
+			nVideoFrame->nbuffer->height, (jbyte*) nVideoFrame->nbuffer->pFrameRGB->data[0])) {
+		fprintf(stderr, "RGBFrameBuffer allocation failed!\n");
+		return false;
+	}
+
+	if (!setJVideoFrame(env, frame, nVideoFrame)) {
+		fprintf(stderr, "Java Video Frame allocation failed!\n");
+		return false;
+	}
+
+	return true;
 }
 
 

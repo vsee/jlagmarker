@@ -1,7 +1,6 @@
 package mobileworkloads.jlagmarker.video;
 
-import mobileworkloads.jlagmarker.JLagmarkerMain;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 
 public class VideoState {
 
@@ -88,19 +87,19 @@ public class VideoState {
 		JRGBFrameBuffer buff = new JRGBFrameBuffer();
 		NativeVideoFrameInfo frameInfo = new NativeVideoFrameInfo();
 		if(!lnativeSkipBackwards(frameOffset, frameInfo, buff))
-			throw new IllegalArgumentException("Video frame history lookup out of range: " + frameOffset);
+			throw new IllegalArgumentException("Video frame history skip out of range: " + frameOffset);
 		
 		currentFrame = new VideoFrame(frameInfo.startTimeUS, frameInfo.durationUS,
 				frameInfo.frameId, new RGBImage(buff));
 	}
 	
 	public VideoFrame getFrameFromHistory(int frameOffset) {
-		//TODO implement me
-		throw new NotImplementedException();
-//		if (frameOffset < 0 || frameOffset >= frameHistory.size())
-//			throw new IllegalArgumentException("Video frame history lookup out of range: " + frameOffset);
-//		
-//		return frameHistory.get(frameOffset).clone();
+		JRGBFrameBuffer buff = new JRGBFrameBuffer();
+		NativeVideoFrameInfo frameInfo = new NativeVideoFrameInfo();
+		if(!lnativeGetFrameFromHistory(frameOffset, frameInfo, buff))
+			throw new IllegalArgumentException("Video frame history lookup out of range: " + frameOffset);
+		
+		return new VideoFrame(frameInfo.startTimeUS, frameInfo.durationUS,	frameInfo.frameId, new RGBImage(buff));
 	}
 	
 	public void startRecording() {
@@ -131,7 +130,7 @@ public class VideoState {
 	
 	public native boolean lnativeSkipBackwards(int frameOffset, NativeVideoFrameInfo frameInfo, JRGBFrameBuffer frameBuffer);
 	
-	public native VideoFrame lnativeGetFrameFromHistory(int frameOffset);
+	public native boolean lnativeGetFrameFromHistory(int frameOffset, NativeVideoFrameInfo frameInfo, JRGBFrameBuffer frameBuffer);
 
 	static {
 		System.loadLibrary("VideoState");

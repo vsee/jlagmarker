@@ -103,6 +103,8 @@ public class JLagmarkerMain {
 			System.out.println("Output directory already exists.");
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
+		} catch(Exception e2) {
+			System.out.println("Something went wrong: " + e2);
 		}
 		
 		return outputFolder;
