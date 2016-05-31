@@ -98,6 +98,9 @@ public class FrameDumpMode extends LagmarkerMode {
 			if(currFrame.videoFrameId >= currInterval.leftBorder) {
 				if(currFrame.videoFrameId <= currInterval.rightBorder) {
 
+					if(currFrame.videoFrameId % 500 != 0 && currFrame.videoFrameId % 100 == 0)
+						System.out.println("Dumping: " + currFrame.videoFrameId);
+					
 					dumpFrame(currFrame, "NO_MASK");
 					for(ImgMask mask : dumpMasks) {
 						VideoFrame maskedFrame = currFrame.clone();
@@ -120,7 +123,7 @@ public class FrameDumpMode extends LagmarkerMode {
 		Path filename = outputFolder.resolve(String.format("frame_%06d_%s.ppm", currFrame.videoFrameId, maskName));
 		try {
 			currFrame.frameImg.writeToFile(filename, false);
-			System.out.println("Frame " + currFrame.videoFrameId + " dumped with mask " + maskName);
+			//System.out.println("Frame " + currFrame.videoFrameId + " dumped with mask " + maskName);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Unable to dump video frame: " + currFrame, e);
 		}
