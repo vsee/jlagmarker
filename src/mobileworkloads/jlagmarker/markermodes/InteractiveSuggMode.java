@@ -14,6 +14,8 @@ import mobileworkloads.jlagmarker.masking.ImgMask;
 import mobileworkloads.jlagmarker.masking.MaskManager;
 import mobileworkloads.jlagmarker.video.RGBImgUtils;
 import mobileworkloads.jlagmarker.video.VideoFrame;
+import mobileworkloads.jlagmarker.worker.DetectorConfig;
+import mobileworkloads.jlagmarker.worker.DetectorConfig.DetectorConfParams;
 import mobileworkloads.jlagmarker.worker.Suggester;
 import mobileworkloads.jlagmarker.worker.SuggesterConfig.SuggesterConfParams;
 
@@ -25,14 +27,28 @@ public class InteractiveSuggMode extends SuggesterMode {
 	protected boolean defaultSugg;
 	protected int autoAcceptLimit = 0;
 	
+	protected final DetectorConfig dconf;
+	
 	public InteractiveSuggMode(String videoName, long inputFlashOffsetNS,
-			Path inputData, Path sconfFile,	String outputPrefix, Path outputFolder, boolean defaultSugg) {
+			Path inputData, Path sconfFile,	Path dconfFile, String outputPrefix, Path outputFolder, boolean defaultSugg) {
 		
 		super(videoName, inputFlashOffsetNS, inputData, sconfFile, outputPrefix, outputFolder);
 		
 		in = new Scanner(System.in);
 		frameProcessingFinished = false;
 		this.defaultSugg = defaultSugg;
+		
+		// parse detector config if specified
+		if(dconfFile != null) {
+			try {
+				dconf = new DetectorConfig(dconfFile);
+				System.out.println();
+			} catch (IOException e) {
+				throw new UncheckedIOException("Error parsing detector configuration file [" + dconfFile + "]", e);
+			}
+		} else {
+			dconf = null;
+		}
 	}
 	
 	@Override
@@ -183,6 +199,10 @@ public class InteractiveSuggMode extends SuggesterMode {
 	protected boolean acceptSuggestions(VideoFrame currFrame) {
 		SuggestionViewGenerator.generateSuggestionView(outputFolder.resolve("markup.html"), lprofile);
 		
+		Integer presetSuggId = dconf != null ? 
+				((DetectorConfParams) dconf.getParams(currLag.lagId)).suggestionId : 
+				null; 
+		
 		System.out.println("Suggester finished: ");
 		System.out.println("1. Accept Suggestions.");
 		System.out.println("2. Rerun Suggester.");
@@ -195,13 +215,20 @@ public class InteractiveSuggMode extends SuggesterMode {
 
 			System.out.print("Pick an action [default 1]: ");
 			String line = "";
-			if(defaultSugg || (autoAcceptLimit > 0 && currLag.getSuggestionIds().size() == 1)) {
+			if(defaultSugg || 
+			   (autoAcceptLimit > 0 && // autoaccept is active
+					  (presetSuggId != null) || // suggestion id is given
+					  (presetSuggId == null && currLag.getSuggestionIds().size() == 1) // only one suggestion id is possible
+			    )
+			   ) {
+				
 				if(autoAcceptLimit > 0) autoAcceptLimit--;
-				line = "1";
+				if(presetSuggId == -1) line = "3"; // SKIP is preset in detector config
+				else line = "1";
 			} else {
 				line = in.nextLine();
 			}
-			
+	
 			
 			if (line.isEmpty() || line.equalsIgnoreCase("1")) {
 				selectSuggestion();
@@ -261,7 +288,9 @@ public class InteractiveSuggMode extends SuggesterMode {
 			} 
 			
 			System.out.print("Select suggestion: " + suggestionIds + " ");
-			String line = in.nextLine();
+			String line = null;
+			if(dconf == null) line = in.nextLine();
+			else line = "" + ((DetectorConfParams) dconf.getParams(currLag.lagId)).suggestionId;
 
 			try {
 				int selectedId = Integer.parseInt(line);
