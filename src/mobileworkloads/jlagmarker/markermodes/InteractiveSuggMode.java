@@ -223,7 +223,7 @@ public class InteractiveSuggMode extends SuggesterMode {
 			   ) {
 				
 				if(autoAcceptLimit > 0) autoAcceptLimit--;
-				if(presetSuggId == -1) line = "3"; // SKIP is preset in detector config
+				if(presetSuggId != null && presetSuggId == -1) line = "3"; // SKIP is preset in detector config
 				else line = "1";
 			} else {
 				line = in.nextLine();
