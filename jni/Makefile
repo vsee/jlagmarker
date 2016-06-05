@@ -8,7 +8,7 @@ LDFLAGS = -L../lib/libav-0.8.16/lib/ -lavformat -lavcodec -lavutil -lswscale
  
 
 # Define a variable for classpath
-CLASS_PATH = ../bin
+CLASS_PATH = ../build/classes/main
 
 # Define a virtual path for .class in the bin directory
 vpath %.class $(CLASS_PATH)

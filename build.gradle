@@ -1,6 +1,5 @@
 /*
 * TODO integrate into eclipse
-* TODO update repo
  * TODO test test test
 */
 
@@ -56,9 +55,8 @@ task cleanNative(type: Exec, description: 'Clean JNI object files') {
 
 clean.dependsOn 'cleanNative'
 
-tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn buildNative
-}
+compileJava.finalizedBy buildNative
+buildNative.mustRunAfter compileJava
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.4'
