@@ -1,0 +1,66 @@
+/*
+* TODO integrate into eclipse
+* TODO update repo
+ * TODO test test test
+*/
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+version = '1.0'
+
+allprojects {
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+    }
+}
+
+jar {
+  from { configurations.compile.collect { it.isDirectory() || it.name.endsWith("so") ? it : zipTree(it) } }
+  manifest {
+    attributes 'Main-Class' : 'mobileworkloads.jlagmarker.JLagmarkerMain',
+               'Implementation-Title' : 'JLagmarker',
+               'Implementation-Version' : version
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+   compile group: 'nz.ac.waikato.cms.weka', name: 'weka-stable', version: '3.6.6'
+   compile files('lib/algovResourceTools.jar')
+   compile files('jni/libVideoState.so')
+}
+
+task buildNative(type: Exec, description: 'Compile JNI source') {
+    def ndkDir = "./jni"
+    commandLine "make", "-C", "$ndkDir"
+}
+
+task cleanNative(type: Exec, description: 'Clean JNI object files') {
+    def ndkDir = "./jni"
+    commandLine "make", "-C", "$ndkDir", "clean"
+}
+
+clean.dependsOn 'cleanNative'
+
+tasks.withType(JavaCompile) {
+    compileTask -> compileTask.dependsOn buildNative
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '2.4'
+}
+

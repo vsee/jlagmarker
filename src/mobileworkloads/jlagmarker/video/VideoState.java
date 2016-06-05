@@ -1,5 +1,9 @@
 package mobileworkloads.jlagmarker.video;
 
+import java.io.IOException;
+
+import cz.adamh.utils.NativeUtils;
+
 
 
 public class VideoState {
@@ -133,6 +137,14 @@ public class VideoState {
 	public native boolean lnativeGetFrameFromHistory(int frameOffset, NativeVideoFrameInfo frameInfo, JRGBFrameBuffer frameBuffer);
 
 	static {
-		System.loadLibrary("VideoState");
+	    try {
+			System.loadLibrary("VideoState");
+	    } catch (UnsatisfiedLinkError e) {
+	        try {
+	            NativeUtils.loadLibraryFromJar("/libVideoState.so");
+	        } catch (IOException e1) {
+	            throw new RuntimeException(e1);
+	        }
+	    }
 	}
 }

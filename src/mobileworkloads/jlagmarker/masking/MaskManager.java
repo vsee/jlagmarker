@@ -56,6 +56,7 @@ public class MaskManager {
 		availableMasks.clear();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public boolean reloadMasks() {
 		// TODO fix the problem with reloading masks that have been changed
 		// it can happen that a reference to the changed mask still exists in a config parameter
