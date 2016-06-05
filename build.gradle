@@ -25,7 +25,8 @@ sourceSets {
 }
 
 jar {
-  from { configurations.compile.collect { it.isDirectory() || it.name.endsWith("so") ? it : zipTree(it) } }
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+  from 'jni/libVideoState.so'
   manifest {
     attributes 'Main-Class' : 'mobileworkloads.jlagmarker.JLagmarkerMain',
                'Implementation-Title' : 'JLagmarker',
@@ -33,6 +34,9 @@ jar {
   }
 }
 
+configurations {
+    noExport
+}
 repositories {
   mavenCentral()
 }
@@ -40,7 +44,6 @@ repositories {
 dependencies {
    compile group: 'nz.ac.waikato.cms.weka', name: 'weka-stable', version: '3.6.6'
    compile files('lib/algovResourceTools.jar')
-   compile files('jni/libVideoState.so')
 }
 
 task buildNative(type: Exec, description: 'Compile JNI source') {
@@ -62,3 +65,10 @@ task wrapper(type: Wrapper) {
 	gradleVersion = '2.4'
 }
 
+eclipse {
+  classpath {
+    defaultOutputDir = file('build-eclipse')
+    downloadSources = true
+    downloadJavadoc = true
+  }
+}
