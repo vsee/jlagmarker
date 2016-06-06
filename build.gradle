@@ -1,7 +1,3 @@
-/*
- * TODO test test test
-*/
-
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
