@@ -1,0 +1,6 @@
+write proper README md
+  link to workload paper
+add an execution example
+refactor folder structure
+add some documentation
+use arg4j instead of weka argument parsing
