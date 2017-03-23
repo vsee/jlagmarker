@@ -217,15 +217,16 @@ public class InteractiveSuggMode extends SuggesterMode {
 			String line = "";
 			if(defaultSugg || 
 			   (autoAcceptLimit > 0 && // autoaccept is active
-					  (presetSuggId != null) || // suggestion id is given
+					  ((presetSuggId != null) || // suggestion id is given
 					  (presetSuggId == null && currLag.getSuggestionIds().size() == 1) // only one suggestion id is possible
-			    )
+			    ))
 			   ) {
-				
+				System.out.println("HERE");
 				if(autoAcceptLimit > 0) autoAcceptLimit--;
 				if(presetSuggId != null && presetSuggId == -1) line = "3"; // SKIP is preset in detector config
 				else line = "1";
 			} else {
+				System.out.println("HERE!!!");
 				line = in.nextLine();
 			}
 	
