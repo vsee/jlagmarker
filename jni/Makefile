@@ -25,4 +25,4 @@ genNativeHeaders : mobileworkloads/jlagmarker/video/VideoState.class
 	javah -classpath $(CLASS_PATH) mobileworkloads.jlagmarker.video.VideoState
 	
 clean :
-	rm libVideoState.so VideoState.o mobileworkloads_jlagmarker_video_VideoState.h
+	rm -f libVideoState.so VideoState.o mobileworkloads_jlagmarker_video_VideoState.h

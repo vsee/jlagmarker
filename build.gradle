@@ -51,10 +51,26 @@ task cleanNative(type: Exec, description: 'Clean JNI object files') {
     commandLine "make", "-C", "$ndkDir", "clean"
 }
 
-clean.dependsOn 'cleanNative'
+task unzipLibav(type: Copy, description: 'Unpack libav library files') {
+    def zipFile = file('lib/libav-0.8.16.zip')
+    def outputDir = file("lib/libav-0.8.16")
+ 
+    from zipTree(zipFile)
+    into outputDir
+}
+
+task cleanLibav(type: Exec, description: 'Remove libav library files') {
+    commandLine "rm","-rf","lib/libav-0.8.16"
+}
+
+
+clean.dependsOn 'cleanNative','cleanLibav' 
 
 compileJava.finalizedBy buildNative
+compileJava.finalizedBy unzipLibav
 buildNative.mustRunAfter compileJava
+buildNative.mustRunAfter unzipLibav
+
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.4'
