@@ -10,3 +10,9 @@ add some documentation
 get rid of old repo on bitbucket
 
 use arg4j instead of weka argument parsing
+
+share lagmarker paper data
+ - device setup and images
+ - user interactions
+ - scripts and instructions for usage
+ - video recordings and ftrace files
