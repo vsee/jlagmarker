@@ -1,3 +1,0 @@
-gcc -o mem_intercept.so -shared -fPIC mem_intercept.c
-
-LD_PRELOAD=./mem_intercept.so java -Xmx6g -Djava.library.path=/home/vseeker/workspace/jlagmarker/jni -ea -jar /home/vseeker/workspace/jlagmarker/jlagmarker.jar -mode SUGGESTER -video /media/vseeker/data/irritationmetric/dataset10/iter01/1190400/video/Recording_2015-10-21_17-43-44_0001.ts -masks /home/vseeker/workspace/jlagmarker/res/masksspec.conf -input /media/vseeker/data/irritationmetric/dataset10/iter01/1190400/stats/movementdata_10_01_1190400.csv -outPref dataset10_iter01_1190400 -outDir /media/vseeker/data/irritationmetric/dataset10/output -sconf /media/vseeker/data/irritationmetric/dataset10/suggester_config.csv -ifoffset 46265312 -defaultSugg true 2> mem.log
