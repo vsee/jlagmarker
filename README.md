@@ -1,15 +1,36 @@
-**NOTE: I am in the middle of brushing up this repository for public accessibility. 
-Stay tuned for an extensive readme and execution examples ...**
+# Interaction Lag Detection in Interactive Workloads
 
-JLagmarker user interaction detection and annotation tool
+JLagmarker automatically detects user interactions and corresponding
+system responses (interaction lag) in screen recordings of interactive workloads.
 
-Build project and jar files with
-./gradlew build
+It produces a profile of user interaction lag for a given workload and system
+configuration. Different interaction lag profiles of the same workload can be 
+compared to analyse how different system configurations affect user perceived
+system response times.
 
-Clean with
-./gradlew clean
+Read the the corresponding [paper](http://homepages.inf.ed.ac.uk/s1160444/docs/measuring_qoe_IISWC2014.pdf) 
+for more details and a case study. It was published at [IISWC'14](http://www.iiswc.org/iiswc2014/) 
+and awarded the conference's **Best Paper Award**.
 
-Build eclipse project with:
-$ ./gradlew eclipse
+## Building the Project
+
+### Dependencies
+
+* Java 8
+
+### Build
+
+Build project and jar files with:
+
+```$ ./gradlew build```
+
+Clean with:
+
+```$ ./gradlew clean```
+
+Build Eclipse project with:
+
+```$ ./gradlew eclipse```
+
 then import existing project into eclipse
 
