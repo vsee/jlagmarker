@@ -1,11 +1,11 @@
-write proper README md
-  link to workload paper
+add to README
+  explanation of the single components
+  explanation of input arguments
+  how to run an example
 
 add an execution example
 
-refactor folder structure
-
-add some documentation
+polish documentation
 
 get rid of old repo on bitbucket
 
