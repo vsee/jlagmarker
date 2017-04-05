@@ -5,9 +5,13 @@ add to README
 
 add an execution example
 
+add badges
+
 polish documentation
 
 get rid of old repo on bitbucket
+
+add tests and integrate with travis ci
 
 use arg4j instead of weka argument parsing
 
