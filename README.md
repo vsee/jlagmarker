@@ -1,6 +1,12 @@
 # Interaction Lag Detection in Interactive Workloads
 
-JLagmarker automatically detects user interactions and corresponding
+<div align="center">
+  <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank">
+    <img src="https://img.shields.io/badge/license-GNU%20GPL%20v3-blue.svg?style=flat">
+  </a>
+</div>
+
+**JLagmarker** automatically detects user interactions and corresponding
 system responses (interaction lag) in screen recordings of interactive workloads.
 
 It produces a profile of user interaction lag for a given workload and system
