@@ -11,6 +11,8 @@ polish documentation
 
 get rid of old repo on bitbucket
 
+add tests and integrate with travis ci
+
 use arg4j instead of weka argument parsing
 
 share lagmarker paper data
