@@ -36,7 +36,8 @@ then import existing project into eclipse
 
 ## Executing Sample Workload
 
-This archive contains all the necessary data to execute jlagmarker
+This [archive](https://drive.google.com/open?id=0BziCZ9zd_KatQm9UTVhqanFoMnM) 
+contains all the necessary data to execute jlagmarker
 for an example workload. The workload was recorded on a 
 *Qualcomm Dragonboard APQ8074* running *Android Jelly Bean version 4.2.2* 
 with *Linux kernel 3.4.0*.
@@ -62,4 +63,12 @@ The data archive contains:
 ## JLagmarker Detailed Description
 
 ### Lag End Suggestion
+
+
+## License
+
+Copyright 2017 Volker Seeker <volker@seekerscience.co.uk>.
+
+Released under the terms of the GPLv3 license. See [LICENSE.txt](/LICENSE.txt)
+for details.
 
