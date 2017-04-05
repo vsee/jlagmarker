@@ -14,7 +14,7 @@ configuration. Different interaction lag profiles of the same workload can be
 compared to analyse how different system configurations affect user perceived
 system response times.
 
-Read the the corresponding [paper](http://homepages.inf.ed.ac.uk/s1160444/docs/measuring_qoe_IISWC2014.pdf) 
+Read the the corresponding [paper](vsee.github.io/docs/papers/measuring_qoe_IISWC2014.pdf) 
 for more details and a case study. It was published at [IISWC'14](http://www.iiswc.org/iiswc2014/) 
 and awarded the conference's **Best Paper Award**.
 
@@ -49,7 +49,7 @@ for an example workload. The workload was recorded on a
 with *Linux kernel 3.4.0*.
 
 **NOTE: Further information on how to collect the provided workload 
-data can be found in the [publication](http://homepages.inf.ed.ac.uk/s1160444/docs/measuring_qoe_IISWC2014.pdf) 
+data can be found in the [publication](vsee.github.io/docs/papers/measuring_qoe_IISWC2014.pdf) 
 mentioned above or my [dissertation](http://homepages.inf.ed.ac.uk/s1160444/publications.html).**
 
 The data archive contains:
