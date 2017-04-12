@@ -95,25 +95,29 @@ Let's assume it is extracted to ```WORKLOAD_HOME```
 To execute interaction lag annotation (i.e SUGGESTER mode), go to the project folder and execute:
 
 ```
-$ java -jar ./build/libs/jlagmarker-x.x.x.jar -mode SUGGESTER -video $WORKLOAD_HOME/dataset01.ts -masks ./src/main/resources/masksspec.conf -input $WORKLOAD_HOME/userinput_dataset01.csv -outPref sampleExec -outDir $WORKLOAD_HOME
+$ java -jar ./build/libs/jlagmarker-x.x.x.jar -mode SUGGESTER -video $WORKLOAD_HOME/dataset01.ts -masks ./src/main/resources/masksspec.conf -input $WORKLOAD_HOME/userinput_dataset01.csv -ifoffset 0 -outPref sampleExec -outDir $WORKLOAD_HOME
 ```
 
 This command starts the interactive workload annotation for dataset01. All execution results are written to ```$WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec```. During execution an html file is generated in the output folder (```$WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec/markup.html```) displaying the current workload annotation progress. (I know, it is not a great GUI. A better one is currently being developed.)
 
 ### Executing Interaction Lag Detection
 
-```java -jar ./build/libs/jlagmarker-0.1.0.jar -mode DETECTOR -dconf ~/workspace/tmp/lmrun_SUGGESTER_DEFAULT_testRun/suggestions/detector_config.csv -suggImgs ~/workspace/tmp/lmrun_SUGGESTER_DEFAULT_testRun/suggestions/ -video ~/workspace/tmp/sampleworkload/dataset01.ts -ifoffset 0 -input ~/workspace/tmp/sampleworkload/userinput_dataset01.csv -masks src/main/resources/masksspec.conf -outPref testRun -outDir ~/workspace/tmp/```
+```
+java -jar ./build/libs/jlagmarker-x.x.x.jar -mode DETECTOR -dconf $WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec/suggestions/detector_config.csv -suggImgs $WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec/suggestions/ -video $WORKLOAD_HOME/dataset01.ts -masks ./src/main/resources/masksspec.conf -input $WORKLOAD_HOME/userinput_dataset01.csv -ifoffset 0 -outPref sampleExec -outDir $WORKLOAD_HOME
+```
+This command automatically analyses the given video using the image suggestions and detector configuration generated in the previous step to find interaction lags. All generated output is written to ```$WORKLOAD_HOME/lmrun_DETECTOR_sampleExec```.
 
-
-### Executing Framedump
-
-
-
-
+In this example the video being analysed automatically is the same as used for suggestion. However, the true potential of Jlagmarker lies in analysing a different video of the same workload execution. **Once the suggestion data is generated it can be used an arbitrary number of times for automatic detection**.
 
 ## JLagmarker Detailed Description
 
+TBD
+
 ### Lag End Suggestion
+
+### Automatic Detection
+
+### Frame Dump
 
 
 ## License
