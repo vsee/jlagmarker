@@ -71,7 +71,7 @@ then import existing project into eclipse
 
 ## Executing Sample Workload
 
-This [archive](https://drive.google.com/open?id=0BziCZ9zd_KatQm9UTVhqanFoMnM) 
+This [archive](https://drive.google.com/open?id=0BziCZ9zd_KatcWFLcDR2Yk45bUE) 
 contains all the necessary data to execute jlagmarker
 for an example workload. The workload was recorded on a 
 *Qualcomm Dragonboard APQ8074* running *Android Jelly Bean version 4.2.2* 
@@ -86,7 +86,7 @@ The data archive contains:
 * a video of the screen output during workload execution (dataset01.ts)
 * a description of touch screen input event timings (userinput_dataset01.csv)
 * a sample configuration file for [lag end suggestions](#lag-end-suggestion) (suggester_config_dataset01.csv)
-* a file specifying the offset between initial input event and [screen synchronisation flash](#jlagmarker-detailed-description) (ifoffset)
+* a file specifying the offset between initial input event and [screen synchronisation flash](#jlagmarker-detailed-description) in nano seconds (ifoffset_dataset01)
 
 Let's assume it is extracted to ```WORKLOAD_HOME```
 
@@ -95,7 +95,7 @@ Let's assume it is extracted to ```WORKLOAD_HOME```
 To execute interaction lag annotation (i.e SUGGESTER mode), go to the project folder and execute:
 
 ```
-$ java -jar ./build/libs/jlagmarker-x.x.x.jar -mode SUGGESTER -video $WORKLOAD_HOME/dataset01.ts -masks ./src/main/resources/masksspec.conf -input $WORKLOAD_HOME/userinput_dataset01.csv -ifoffset 0 -outPref sampleExec -outDir $WORKLOAD_HOME
+$ java -jar ./build/libs/jlagmarker-x.x.x.jar -mode SUGGESTER -video $WORKLOAD_HOME/dataset01.ts -masks ./src/main/resources/masksspec.conf -input $WORKLOAD_HOME/userinput_dataset01.csv -ifoffset `cat $WORKLOAD_HOME/ifoffset_dataset01` -outPref sampleExec -outDir $WORKLOAD_HOME
 ```
 
 This command starts the interactive workload annotation for dataset01. All execution results are written to ```$WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec```. During execution an html file is generated in the output folder (```$WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec/markup.html```) displaying the current workload annotation progress. (I know, it is not a great GUI. A better one is currently being developed.)
@@ -103,7 +103,7 @@ This command starts the interactive workload annotation for dataset01. All execu
 ### Executing Interaction Lag Detection
 
 ```
-java -jar ./build/libs/jlagmarker-x.x.x.jar -mode DETECTOR -dconf $WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec/suggestions/detector_config.csv -suggImgs $WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec/suggestions/ -video $WORKLOAD_HOME/dataset01.ts -masks ./src/main/resources/masksspec.conf -input $WORKLOAD_HOME/userinput_dataset01.csv -ifoffset 0 -outPref sampleExec -outDir $WORKLOAD_HOME
+java -jar ./build/libs/jlagmarker-x.x.x.jar -mode DETECTOR -dconf $WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec/suggestions/detector_config.csv -suggImgs $WORKLOAD_HOME/lmrun_SUGGESTER_sampleExec/suggestions/ -video $WORKLOAD_HOME/dataset01.ts -masks ./src/main/resources/masksspec.conf -input $WORKLOAD_HOME/userinput_dataset01.csv -ifoffset `cat $WORKLOAD_HOME/ifoffset_dataset01` -outPref sampleExec -outDir $WORKLOAD_HOME
 ```
 This command automatically analyses the given video using the image suggestions and detector configuration generated in the previous step to find interaction lags. All generated output is written to ```$WORKLOAD_HOME/lmrun_DETECTOR_sampleExec```.
 
