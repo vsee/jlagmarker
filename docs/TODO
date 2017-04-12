@@ -3,7 +3,7 @@ add to README
   explanation of input arguments
   how to run an example
 
-add an execution example
+consider using makerelease script
 
 add badges
 
@@ -14,9 +14,3 @@ get rid of old repo on bitbucket
 add tests and integrate with travis ci
 
 use arg4j instead of weka argument parsing
-
-share lagmarker paper data
- - device setup and images
- - user interactions
- - scripts and instructions for usage
- - video recordings and ftrace files
