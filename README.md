@@ -32,7 +32,7 @@ video output of the executed workload. Thereby Jlagmarker allows to capture resp
 as seen from the user's point of view. This perspective might differ from underlying system 
 activity.
 
-Here is an example of an interactive workload:
+Here is an example video of an interactive workload (**click to play**):
 
 [![Automatic Workload Execution](http://img.youtube.com/vi/_HKicclVdpc/0.jpg)](http://www.youtube.com/watch?v=_HKicclVdpc)
 
