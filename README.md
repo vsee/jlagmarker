@@ -1,10 +1,22 @@
 # Interaction Lag Detection in Interactive Workloads
 
-<div align="center">
-  <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank">
-    <img src="https://img.shields.io/badge/license-GNU%20GPL%20v3-blue.svg?style=flat">
-  </a>
-</div>
+<!-- Better code -->
+<a href="https://bettercodehub.com/results/vsee/jlagmarker">
+  <img src="https://bettercodehub.com/edge/badge/vsee/jlagmarker?branch=master">
+</a>
+<!-- license -->
+<a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank">
+  <img src="https://img.shields.io/badge/license-GNU%20GPL%20v3-blue.svg?style=flat">
+</a>  
+<!-- Repo size -->
+<a href="https://github.com/vsee/jlagmarker">
+  <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/vsee/jlagmarker">
+</a>
+<!-- Commit counter -->
+<a href="https://github.com/vsee/jlagmarker/graphs/commit-activity">
+  <img src="https://img.shields.io/github/commit-activity/y/vsee/jlagmarker.svg?color=yellow">
+</a>
+
 
 **JLagmarker** automatically detects user interactions and corresponding
 system responses (interaction lag) in screen recordings of interactive workloads.
